@@ -46,8 +46,8 @@ Create a new project anywhere on your machine without using the GitHub template 
 
 ```bash
 # Clone the framework
-git clone https://github.com/axelburkhardt/ai-augmented-re.git
-cd ai-augmented-re
+git clone https://github.com/4797pnkkx5-gif/AI-Augmented-RE.git
+cd AI-Augmented-RE
 
 # Create a new project in a separate directory
 ./setup.sh ~/projects/my-new-project
