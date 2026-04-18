@@ -1,0 +1,44 @@
+# <!-- PROJECT_NAME -->
+
+Requirements Engineering project using the [AI-Augmented RE framework](https://github.com/axelburkhardt/ai-augmented-re).
+
+See `AGENTS.md` for active phase, pipeline status, and AI rules.
+
+## RE Pipeline
+
+```
+Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test Cases
+               ↑ review gate        ↑ gate   ↑ gate       ↑ gate   ↑ gate
+```
+
+| Phase | Skill | Artifact | Status |
+|-------|-------|----------|--------|
+| 1 | `/elicit` | Elicitation Document | Pending |
+| 2 | `/create-epics` | Epics | Pending |
+| 3 | `/create-stories` | User Stories | Pending |
+| 4 | `/create-srs` | Software Requirements Specification | Pending |
+| 5 | `/create-tests` | Test Concept + Test Cases | Pending |
+| 6 | `/trace` | Traceability Matrix | Pending |
+
+## How to Use
+
+**Start a new phase:**
+1. Drop input documents into `inputs/`
+2. Claude Code: run `/elicit` — GitHub Copilot: "Run the elicit skill"
+3. Review the generated artifact
+4. Type `APPROVED` to proceed to the next phase
+
+**Update with new inputs:**
+Run `/elicit` again after adding new documents. The skill detects new inputs automatically via `inputs/manifest.md`.
+
+## Key Paths
+
+- **Project:** `~/projects/<!-- PROJECT_SLUG -->/`
+- **Inputs:** `inputs/` — raw stakeholder documents
+- **Artifacts:** `artifacts/` — generated RE artifacts (version-controlled)
+- **Skills:** `skills/` — phase-specific skill definitions
+
+## Session Log Routing
+
+Stop hook fires `project: <!-- PROJECT_SLUG -->`.
+Logs route to vault: `10-Projects/<!-- PROJECT_NAME -->/_log.md` (if Obsidian configured).

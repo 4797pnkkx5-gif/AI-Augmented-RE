@@ -1,0 +1,15 @@
+# Obsidian vault symlink — machine-specific, recreated by setup.sh
+docs
+
+# Claude Code local settings
+.claude/
+
+# macOS
+.DS_Store
+
+# Input manifest — tracks processed files per project (commit if you want history)
+# inputs/manifest.md
+
+# Editor
+.vscode/
+.idea/

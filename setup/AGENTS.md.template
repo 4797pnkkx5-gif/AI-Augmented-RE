@@ -1,0 +1,35 @@
+# <!-- PROJECT_NAME --> — AI Context
+
+## Project
+
+Requirements Engineering for **<!-- PROJECT_NAME -->** using the AI-Augmented RE framework.
+
+## Active Phase
+
+<!-- Update this line when starting a new phase -->
+Current skill: —
+
+## RE Pipeline
+
+| Phase | Skill | Artifact | Status |
+|-------|-------|----------|--------|
+| 1 | `/elicit` | Elicitation Document | Pending |
+| 2 | `/create-epics` | Epics | Pending |
+| 3 | `/create-stories` | User Stories | Pending |
+| 4 | `/create-srs` | Software Requirements Specification | Pending |
+| 5 | `/create-tests` | Test Concept + Test Cases | Pending |
+| 6 | `/trace` | Traceability Matrix | Pending |
+
+## Key Paths
+
+- Inputs: `inputs/` — drop raw stakeholder documents here
+- Artifacts: `artifacts/` — generated RE artifacts
+- Skills: `skills/` — skill definitions (read these to understand each phase)
+
+## Rules
+
+- Follow the active skill definition exactly — see `skills/<skill>/skill.md`
+- Do not skip human review gates
+- Do not invoke the next skill automatically — the human must type **APPROVED**
+- On update runs: never overwrite `Accepted` or `Rejected` status with `Pending`
+- Every extracted item must carry a source filename for traceability
