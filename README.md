@@ -123,6 +123,18 @@ IDs are never reused, even after deletion or resolution.
 
 ---
 
+## Framework Development
+
+When improving the framework, use `sync-framework.sh` to push changes to an existing test project:
+
+```bash
+./sync-framework.sh ~/projects/my-test-project
+```
+
+This syncs `skills/`, `setup.sh`, and `setup/` into the project. It never touches `AGENTS.md`, `CLAUDE.md`, `inputs/`, or `artifacts/`.
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
