@@ -49,7 +49,20 @@ Determine which mode to operate in before processing any inputs.
 
 ## Step 3 — Input Processing
 
-Apply to every new input file identified in Step 2.
+**Part A — Read API files (always, regardless of manifest state):**
+
+Read every file in `inputs/APIs/` now, even if those files already appear in the manifest. Architecture diagrams must always reflect the current API definitions, not just new ones. For each YAML file, extract:
+
+| Input type | What to extract |
+|------------|----------------|
+| OpenAPI 3.x YAML (`openapi: 3.x.x`) | Service/component name from `info.title`; external server references from `servers`; components from tag groups or path prefixes; endpoint operations (path + method + operationId) and their request/response schemas; dependencies between services visible in server URLs |
+| Other YAML | Best-effort: top-level keys as component names, nested structure as properties. Note format as "non-OpenAPI YAML" in Source. |
+
+If `inputs/APIs/` is empty or does not exist, note that — Section 4 will use placeholder content and generate Open Questions.
+
+**Part B — Read new input files:**
+
+Apply to every new input file identified in Step 2 (files not in the manifest).
 
 Read each file using the Read tool. For each file, extract:
 
@@ -62,16 +75,6 @@ Read each file using the Read tool. For each file, extract:
 | **Constraints** | Technology mandates, regulatory rules, budget/timeline limits |
 | **Ambiguities** | Anything unclear, contradictory, or undefined → candidate Open Questions |
 | **Responsible stakeholder per item** | For each BUC, FR, NFR, CON: note the primary/responsible SH-xxx — used to pre-fill the Accepted By field |
-| **API YAML files in `inputs/APIs/`** | Process separately — see API extraction rules below |
-
-**API YAML extraction (applies to all files in `inputs/APIs/`):**
-
-| Input type | What to extract |
-|------------|----------------|
-| OpenAPI 3.x YAML (`openapi: 3.x.x`) | Service/component name from `info.title`; external server references from `servers`; components from tag groups or path prefixes; endpoint operations (path + method + operationId) and their request/response schemas; dependencies between services visible in server URLs |
-| Other YAML | Best-effort: top-level keys as component names, nested structure as properties. Flag format as "non-OpenAPI YAML" in Source field. |
-
-Use the extracted API data to generate Section 4 (Component and Sequence Diagrams). Record each API file as a processed input in `inputs/manifest.md` like any other file.
 
 **Source tagging:** Every extracted item must carry the originating filename as its Source. This is mandatory for traceability.
 
@@ -140,7 +143,7 @@ The Elicitation Document is a **living document**. Do not regenerate it. Merge n
 3. Process each new input file (Step 3 extraction).
 
 **Open Questions Check (mandatory):**
-For every row in Section 6 where Status is "Open":
+For every row in the Open Questions section (Section 7 in new documents; Section 6 in documents that predate the Section 4 update) where Status is "Open":
 - Check whether the new inputs contain information that resolves or partially answers the question.
 - If yes: update Status to "Resolved", write the answer in the Answer column, cite the source filename. Keep the original question text unchanged.
 - If a new input partially answers a question: update Status to "Partially Resolved" and note what remains unclear.
@@ -159,9 +162,16 @@ Never overwrite a Status of `Accepted` or `Rejected` with `Pending`. Only set `S
 
 **Merge System Architecture (Section 4):**
 
-**CRITICAL — Backfill if Section 4 is absent:** If the current document does not contain `## 4. System Architecture Overview`, you must INSERT this section now, immediately after Section 3. Before inserting, also renumber the existing sections: old Section 4 (Requirements) → Section 5, old Section 5 (Acceptance Criteria) → Section 6, old Section 6 (Open Questions) → Section 7, old Section 7 (Acceptance Status Overview) → Section 8, old Section 8 (Traceability Summary) → Section 9, old Section 9 (Revision History) → Section 10. Update all cross-references inside the document that mention section numbers (e.g., "See Section 5 — AC-FR-001-xx", "See Section 7 (Open Questions)"). Then populate Section 4 using all YAML files currently in `inputs/APIs/` — reading already-processed files is explicitly permitted here; the manifest tracks runs, not reads. Follow the same generation rules as Step 4a Create Mode for Section 4.
+Check whether the current document contains the heading `## 4. System Architecture Overview`.
 
-- If Section 4 already exists AND new API YAML files were detected in `inputs/APIs/`: re-derive component diagram and update Section 4.0. Append a note below the existing diagram: `> Updated YYYY-MM-DD ([source]): [what changed]`. Never replace or remove existing diagram content if COMP-001 Status=Accepted.
+**If Section 4 is ABSENT (backfill required):**
+1. Rename section headings in the existing document: `## 4.` → `## 5.`, `## 5.` → `## 6.`, `## 6.` → `## 7.`, `## 7.` → `## 8.`, `## 8.` → `## 9.`, `## 9.` → `## 10.`
+2. Update all internal cross-references that cite section numbers (e.g., `See Section 4 —` → `See Section 5 —`, `Section 6 (Open Questions)` → `Section 7 (Open Questions)`).
+3. Insert the new `## 4. System Architecture Overview` block immediately after the last line of Section 3. Use the API data already extracted in Step 3 Part A to populate it. Follow the same rules as Step 4a for Section 4 content (component diagram, sequence diagrams, OQs if data is insufficient).
+4. Continue to the remainder of the Update Mode steps below.
+
+**If Section 4 IS present AND new API YAML files were detected:**
+- Re-derive component diagram and update Section 4.0. Append a note below the diagram: `> Updated YYYY-MM-DD ([source]): [what changed]`. Never replace existing content if COMP-001 Status=Accepted.
 - Acceptance field preservation: never overwrite Accepted/Rejected on COMP-001 or any SEQ-xxx.
 - For each new BUC added during this update: add a new SEQ-xxx subsection. If no API YAML available, add OQ as in Create Mode.
 - If architecture OQs from a previous run are now resolved by new API YAML: update those OQ rows to Resolved; improve the diagram content; append update note.
