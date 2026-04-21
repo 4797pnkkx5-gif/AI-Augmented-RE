@@ -38,8 +38,10 @@ Determine which mode to operate in before processing any inputs.
 | Condition | Mode |
 |-----------|------|
 | `artifacts/01-elicitation/elicitation-document.md` does NOT exist | **Create** |
-| Document exists AND new inputs were found | **Update** |
-| Document exists AND no new inputs | **Review-only** |
+| Document exists AND (new inputs found OR Section 4 "System Architecture Overview" is absent from the document) | **Update** |
+| Document exists AND no new inputs AND Section 4 is present | **Review-only** |
+
+**Section 4 absence check:** Before deciding Review-only, scan the existing document for `## 4. System Architecture Overview`. If this heading is not present, treat the run as Update mode regardless of manifest state. This handles documents created before Section 4 was introduced.
 
 **Review-only:** Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Then skip to Step 6 (Review Gate).
 
@@ -156,7 +158,10 @@ For every row in Section 6 where Status is "Open":
 Never overwrite a Status of `Accepted` or `Rejected` with `Pending`. Only set `Status: Pending` on newly created entries. Status changes are made by humans, not by the skill.
 
 **Merge System Architecture (Section 4):**
-- If new API YAML files detected in `inputs/APIs/`: re-derive component diagram and update Section 4.0. Append a note below the existing diagram: `> Updated YYYY-MM-DD ([source]): [what changed]`. Never replace or remove existing diagram content if COMP-001 Status=Accepted.
+
+**CRITICAL — Backfill if Section 4 is absent:** If the current document does not contain `## 4. System Architecture Overview`, you must INSERT this section now, immediately after Section 3. Before inserting, also renumber the existing sections: old Section 4 (Requirements) → Section 5, old Section 5 (Acceptance Criteria) → Section 6, old Section 6 (Open Questions) → Section 7, old Section 7 (Acceptance Status Overview) → Section 8, old Section 8 (Traceability Summary) → Section 9, old Section 9 (Revision History) → Section 10. Update all cross-references inside the document that mention section numbers (e.g., "See Section 5 — AC-FR-001-xx", "See Section 7 (Open Questions)"). Then populate Section 4 using all YAML files currently in `inputs/APIs/` — reading already-processed files is explicitly permitted here; the manifest tracks runs, not reads. Follow the same generation rules as Step 4a Create Mode for Section 4.
+
+- If Section 4 already exists AND new API YAML files were detected in `inputs/APIs/`: re-derive component diagram and update Section 4.0. Append a note below the existing diagram: `> Updated YYYY-MM-DD ([source]): [what changed]`. Never replace or remove existing diagram content if COMP-001 Status=Accepted.
 - Acceptance field preservation: never overwrite Accepted/Rejected on COMP-001 or any SEQ-xxx.
 - For each new BUC added during this update: add a new SEQ-xxx subsection. If no API YAML available, add OQ as in Create Mode.
 - If architecture OQs from a previous run are now resolved by new API YAML: update those OQ rows to Resolved; improve the diagram content; append update note.
