@@ -22,6 +22,7 @@ Each artifact requires explicit human approval before the next is generated.
 | Phase | Skill | Artifact |
 |-------|-------|----------|
 | 1 | `/elicit` | Elicitation Document |
+| 1b | `/arch-diagrams` | Section 4 — Component + Sequence Diagrams |
 | 2 | `/create-epics` | Epics |
 | 3 | `/create-stories` | User Stories |
 | 4 | `/create-srs` | Software Requirements Specification |

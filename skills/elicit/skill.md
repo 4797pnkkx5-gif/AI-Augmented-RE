@@ -17,13 +17,10 @@
 
 Before doing anything else, execute these checks in order:
 
-1. **Section 4 pre-check (mandatory — do this first):** If `artifacts/01-elicitation/elicitation-document.md` exists, open it now and search for the text `## 4. System Architecture Overview`. If this exact heading is NOT found in the file, set an internal flag: **SECTION_4_MISSING = true**. This flag forces Update mode in Step 2 and cannot be overridden by manifest state.
-
-2. List all files in `inputs/` recursively, excluding `inputs/README.md` and `inputs/manifest.md`.
-3. List all files in `inputs/APIs/` recursively. Note the count found. If `inputs/APIs/` does not exist or is empty, note that — Section 4 will use placeholder content and generate Open Questions.
-4. If no files are found in `inputs/` at all: stop and tell the user "No input documents found in `inputs/`. Drop at least one document there and re-run `/elicit`."
-5. If any files cannot be read: note them — do not abort. They will be recorded as open questions.
-6. Confirm the path `artifacts/01-elicitation/` exists in the repo. If it does not: warn the user and stop.
+1. List all files in `inputs/` recursively, excluding `inputs/README.md` and `inputs/manifest.md`.
+2. If no files are found: stop and tell the user "No input documents found in `inputs/`. Drop at least one document there and re-run `/elicit`."
+3. If any files cannot be read: note them — do not abort. They will be recorded as open questions.
+4. Confirm the path `artifacts/01-elicitation/` exists in the repo. If it does not: warn the user and stop.
 
 ---
 
@@ -37,33 +34,19 @@ Follow this decision tree top to bottom. Stop at the first matching condition.
 - If the file exists → read it fully now, then continue to Check 2.
 
 **Check 2 — Does the document contain Section 4?**
-- Search the document text for the exact heading `## 4. System Architecture Overview`.
-- If this heading is NOT present → **UPDATE MODE (Section 4 backfill required)**. Proceed to Step 3, then Step 4b. Do NOT skip to Step 6.
-- If the heading is present → continue to Check 3.
+- Search the document text for the heading `## 4. System Architecture Overview`.
+- If NOT present → **UPDATE MODE (insert Section 4 placeholder)**. Proceed to Step 3, then Step 4b.
+- If present → continue to Check 3.
 
 **Check 3 — Are there new input files?**
 - Read `inputs/manifest.md` if it exists. Extract all filenames from the "File" column.
 - List all files currently in `inputs/` (excluding `inputs/README.md` and `inputs/manifest.md`).
 - If any file in `inputs/` does NOT appear in the manifest → **UPDATE MODE**. Proceed to Step 3, then Step 4b.
-- If all files are already in the manifest AND **SECTION_4_MISSING = false** → **REVIEW-ONLY MODE**. Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Skip to Step 6.
-- **REVIEW-ONLY MODE is forbidden if SECTION_4_MISSING = true.** If you reach this point with the flag set, go back and use Update mode.
+- If all files are already in the manifest → **REVIEW-ONLY MODE**. Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Skip to Step 6.
 
 ---
 
 ## Step 3 — Input Processing
-
-**Part A — Read API files (always, regardless of manifest state):**
-
-Read every file in `inputs/APIs/` now, even if those files already appear in the manifest. Architecture diagrams must always reflect the current API definitions, not just new ones. For each YAML file, extract:
-
-| Input type | What to extract |
-|------------|----------------|
-| OpenAPI 3.x YAML (`openapi: 3.x.x`) | Service/component name from `info.title`; external server references from `servers`; components from tag groups or path prefixes; endpoint operations (path + method + operationId) and their request/response schemas; dependencies between services visible in server URLs |
-| Other YAML | Best-effort: top-level keys as component names, nested structure as properties. Note format as "non-OpenAPI YAML" in Source. |
-
-If `inputs/APIs/` is empty or does not exist, note that — Section 4 will use placeholder content and generate Open Questions.
-
-**Part B — Read new input files:**
 
 Apply to every new input file identified in Step 2 (files not in the manifest).
 
@@ -96,18 +79,7 @@ Read each file using the Read tool. For each file, extract:
    - **Section 2 Stakeholders:** one row per stakeholder found; assign SH-001, SH-002, ... sequentially. Set Status=Pending and Accepted Date=— for every row.
    - **Section 3.0 Use Case Diagram:** After populating all BUC subsections, generate the Mermaid flowchart LR diagram. For each stakeholder in Section 2, add an actor node `SH[number]([role name])` (e.g., `SH001([Product Owner])`). For each BUC, add a use case node `BUC[number][BUC-xxx: short title]` inside the `subgraph SYS["Project Name"]` block. For each BUC's Primary Actor: draw a solid arrow (`-->`). For each BUC's secondary Stakeholders: draw dashed arrows (`-.->`) . Node IDs must use numbers only — no hyphens: `SH001`, `SH002`, `BUC001`, `BUC002`.
    - **Section 3 Business Use Cases:** one subsection per BUC; assign BUC-001, BUC-002, ... sequentially.
-   - **Section 4 System Architecture Overview:** populate after Section 3 is complete (BUCs are needed for sequence diagrams).
-     - **Section 4.0 Component Overview (COMP-001):**
-       - If `inputs/APIs/` contains YAML: extract components and their relationships → generate Mermaid `flowchart LR` diagram. Place client/external actors outside the `subgraph SYS` block; system components inside. Label edges with protocol (HTTP, gRPC, Event, DB) where determinable from the API spec.
-       - If no API YAML but inputs contain architectural/component descriptions (keywords: service, component, module, API, database, backend, frontend, microservice): generate best-effort diagram from described components. Add OQ: "COMP-001 was inferred from textual descriptions. Review accuracy and provide OpenAPI YAML in `inputs/APIs/` to improve precision."
-       - If no architectural input at all: insert placeholder diagram (Client → System box with one placeholder component). Add OQ: "Component diagram is missing. Describe system components in inputs or place OpenAPI YAML files in `inputs/APIs/`." Assign OQ to the user; Status=Open.
-       - Set Status=Pending, Accepted By = tech-lead or architect SH-xxx if identifiable, else most relevant SH-xxx.
-     - **Section 4.1+ Sequence Diagrams (SEQ-001, SEQ-002, ...):**
-       - For each BUC that describes a multi-step interaction involving more than one component: generate one sequence diagram subsection.
-       - Simple BUCs (single actor performing a single action with no visible component interaction) do not require a sequence diagram.
-       - If `inputs/APIs/` has YAML: use component names as participants; use endpoint operationId or path+method as message labels.
-       - If no API YAML: infer participants from BUC descriptions and add OQ per diagram: "Sequence diagram SEQ-xxx (BUC-xxx: [title]) was inferred from textual descriptions. Review and correct, or provide OpenAPI YAML in `inputs/APIs/` for a more accurate diagram."
-       - Assign SEQ-001, SEQ-002, ... sequentially. Set Status=Pending, Accepted By = same SH-xxx as the BUC's Accepted By.
+   - **Section 4 System Architecture Overview:** insert a placeholder only. The `/arch-diagrams` skill populates this section from `inputs/APIs/`. Add one Open Question: "Run `/arch-diagrams` to generate Component and Sequence Diagrams from the API definitions in `inputs/APIs/`."
    - **Section 5.1 Functional Requirements:** one subsection per FR; assign FR-001, FR-002, ... sequentially. Set Status=Pending, Accepted By = responsible SH-xxx (from extraction), Accepted Date=—.
    - **Section 5.2 Non-Functional Requirements:** assign NFR-001, NFR-002, ... Set Status=Pending, Accepted By = most-affected SH-xxx, Accepted Date=—.
    - **Section 5.3 Constraints:** assign CON-001, CON-002, ... Set Status=Pending, Accepted By = SH-xxx who imposed the constraint, Accepted Date=—.
@@ -167,14 +139,12 @@ Never overwrite a Status of `Accepted` or `Rejected` with `Pending`. Only set `S
 
 Check whether the current document contains the heading `## 4. System Architecture Overview`.
 
-**If Section 4 is ABSENT (backfill required):**
-1. Rename section headings in the existing document: `## 4.` → `## 5.`, `## 5.` → `## 6.`, `## 6.` → `## 7.`, `## 7.` → `## 8.`, `## 8.` → `## 9.`, `## 9.` → `## 10.`
-2. Update all internal cross-references that cite section numbers (e.g., `See Section 4 —` → `See Section 5 —`, `Section 6 (Open Questions)` → `Section 7 (Open Questions)`).
-3. Insert the new `## 4. System Architecture Overview` block immediately after the last line of Section 3. Use the API data already extracted in Step 3 Part A to populate it. Follow the same rules as Step 4a for Section 4 content (component diagram, sequence diagrams, OQs if data is insufficient).
-4. Continue to the remainder of the Update Mode steps below.
+**If Section 4 is ABSENT:**
+1. Rename section headings: `## 4.` → `## 5.`, `## 5.` → `## 6.`, `## 6.` → `## 7.`, `## 7.` → `## 8.`, `## 8.` → `## 9.`, `## 9.` → `## 10.`
+2. Update cross-references (e.g., "See Section 4 —" → "See Section 5 —").
+3. Insert a placeholder `## 4. System Architecture Overview` block after Section 3 with the note: "Run `/arch-diagrams` to generate diagrams from `inputs/APIs/`." Add OQ: "Architecture diagrams not yet generated. Run `/arch-diagrams`."
 
-**If Section 4 IS present AND new API YAML files were detected:**
-- Re-derive component diagram and update Section 4.0. Append a note below the diagram: `> Updated YYYY-MM-DD ([source]): [what changed]`. Never replace existing content if COMP-001 Status=Accepted.
+**Section 4 diagram content is owned by `/arch-diagrams`.** Do not attempt to generate Mermaid diagrams here.
 - Acceptance field preservation: never overwrite Accepted/Rejected on COMP-001 or any SEQ-xxx.
 - For each new BUC added during this update: add a new SEQ-xxx subsection. If no API YAML available, add OQ as in Create Mode.
 - If architecture OQs from a previous run are now resolved by new API YAML: update those OQ rows to Resolved; improve the diagram content; append update note.
