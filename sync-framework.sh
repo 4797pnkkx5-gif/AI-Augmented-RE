@@ -66,6 +66,7 @@ echo ""
 # ── Step 3: Dry-run preview ───────────────────────────────────────────────────
 RSYNC_ARGS=(
   -a
+  --exclude='.DS_Store'
   --include='skills'
   --include='skills/***'
   --include='setup.sh'
