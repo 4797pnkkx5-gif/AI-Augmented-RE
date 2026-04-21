@@ -13,7 +13,7 @@ This folder holds all raw source documents for the elicitation phase. Drop any d
 | OpenAPI / YAML | `.yaml`, `.yml` | API specifications, data model definitions |
 | JSON | `.json` | Schema files, config exports |
 
-Sub-folders are fine — the skill scans recursively.
+Sub-folders are supported — the skill scans recursively. The `APIs/` subfolder has a special role (see below).
 
 Use descriptive filenames so the source is clear in the Elicitation Document:
 
@@ -23,6 +23,25 @@ inputs/
   api-spec-v2.yaml
   existing-system-overview.pdf
 ```
+
+## APIs/ Subfolder
+
+Place OpenAPI 3.x YAML files in `inputs/APIs/` to enable automatic generation of Component and Sequence Diagrams in the Elicitation Document (Section 4).
+
+```
+inputs/
+  APIs/
+    location-service.yaml     ← OpenAPI 3.x spec for the location service
+    auth-service.yaml         ← OpenAPI 3.x spec for authentication
+  2026-04-19-product-brief.md
+  2026-04-19-stakeholder-notes.md
+```
+
+- **Format:** OpenAPI 3.x YAML (`.yaml` or `.yml`). One file per service is recommended.
+- **If absent or empty:** the skill generates Open Questions in the Elicitation Document requesting the missing architecture diagrams. You can provide the YAML later and re-run `/elicit` to improve the diagrams.
+- Other YAML formats are accepted with best-effort processing.
+
+---
 
 ## How to Trigger the Skill
 

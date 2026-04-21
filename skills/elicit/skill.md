@@ -6,7 +6,7 @@
 - Claude Code: `/elicit`
 - GitHub Copilot: "Run the elicit skill" or "Follow `skills/elicit/skill.md`"
 
-**Inputs:** All files in `inputs/` (excluding `inputs/README.md` and `inputs/manifest.md`)
+**Inputs:** All files in `inputs/` (excluding `inputs/README.md` and `inputs/manifest.md`); API YAML files in `inputs/APIs/`
 **Outputs:**
 - `artifacts/01-elicitation/elicitation-document.md` (created or updated)
 - `inputs/manifest.md` (created or appended)
@@ -18,9 +18,10 @@
 Before doing anything else:
 
 1. List all files in `inputs/` recursively, excluding `inputs/README.md` and `inputs/manifest.md`.
-2. If no files are found: stop and tell the user "No input documents found in `inputs/`. Drop at least one document there and re-run `/elicit`."
-3. If any files cannot be read: note them — do not abort. They will be recorded as open questions.
-4. Confirm the path `artifacts/01-elicitation/` exists in the repo. If it does not: warn the user and stop.
+2. List all files in `inputs/APIs/` recursively. Note the count found. If `inputs/APIs/` does not exist or is empty, this is not an error — it triggers Open Questions in Step 4.
+3. If no files are found in `inputs/` at all: stop and tell the user "No input documents found in `inputs/`. Drop at least one document there and re-run `/elicit`."
+4. If any files cannot be read: note them — do not abort. They will be recorded as open questions.
+5. Confirm the path `artifacts/01-elicitation/` exists in the repo. If it does not: warn the user and stop.
 
 ---
 
@@ -59,6 +60,16 @@ Read each file using the Read tool. For each file, extract:
 | **Constraints** | Technology mandates, regulatory rules, budget/timeline limits |
 | **Ambiguities** | Anything unclear, contradictory, or undefined → candidate Open Questions |
 | **Responsible stakeholder per item** | For each BUC, FR, NFR, CON: note the primary/responsible SH-xxx — used to pre-fill the Accepted By field |
+| **API YAML files in `inputs/APIs/`** | Process separately — see API extraction rules below |
+
+**API YAML extraction (applies to all files in `inputs/APIs/`):**
+
+| Input type | What to extract |
+|------------|----------------|
+| OpenAPI 3.x YAML (`openapi: 3.x.x`) | Service/component name from `info.title`; external server references from `servers`; components from tag groups or path prefixes; endpoint operations (path + method + operationId) and their request/response schemas; dependencies between services visible in server URLs |
+| Other YAML | Best-effort: top-level keys as component names, nested structure as properties. Flag format as "non-OpenAPI YAML" in Source field. |
+
+Use the extracted API data to generate Section 4 (Component and Sequence Diagrams). Record each API file as a processed input in `inputs/manifest.md` like any other file.
 
 **Source tagging:** Every extracted item must carry the originating filename as its Source. This is mandatory for traceability.
 
@@ -77,14 +88,26 @@ Read each file using the Read tool. For each file, extract:
    - **Section 2 Stakeholders:** one row per stakeholder found; assign SH-001, SH-002, ... sequentially. Set Status=Pending and Accepted Date=— for every row.
    - **Section 3.0 Use Case Diagram:** After populating all BUC subsections, generate the Mermaid flowchart LR diagram. For each stakeholder in Section 2, add an actor node `SH[number]([role name])` (e.g., `SH001([Product Owner])`). For each BUC, add a use case node `BUC[number][BUC-xxx: short title]` inside the `subgraph SYS["Project Name"]` block. For each BUC's Primary Actor: draw a solid arrow (`-->`). For each BUC's secondary Stakeholders: draw dashed arrows (`-.->`) . Node IDs must use numbers only — no hyphens: `SH001`, `SH002`, `BUC001`, `BUC002`.
    - **Section 3 Business Use Cases:** one subsection per BUC; assign BUC-001, BUC-002, ... sequentially.
-   - **Section 4.1 Functional Requirements:** one subsection per FR; assign FR-001, FR-002, ... sequentially. Set Status=Pending, Accepted By = responsible SH-xxx (from extraction), Accepted Date=—.
-   - **Section 4.2 Non-Functional Requirements:** assign NFR-001, NFR-002, ... Set Status=Pending, Accepted By = most-affected SH-xxx, Accepted Date=—.
-   - **Section 4.3 Constraints:** assign CON-001, CON-002, ... Set Status=Pending, Accepted By = SH-xxx who imposed the constraint, Accepted Date=—.
-   - **Section 5 Acceptance Criteria:** one or more AC entries per requirement using the nested bullet format. FR ACs use Given/When/Then sub-bullets. NFR ACs use a single Criterion sub-bullet. For every AC entry: set Status=Pending, Accepted By = same SH-xxx as the parent requirement's Accepted By field, Accepted Date=—.
-   - **Section 6 Open Questions:** one row per ambiguity; assign OQ-001, OQ-002, ...
-   - **Section 7 Acceptance Status Overview:** build all six subtables (Stakeholders, Business Use Cases, Functional Requirements, Non-Functional Requirements, Constraints, Acceptance Criteria) by reading back the acceptance fields from the sections just populated. One row per element. This is the last section populated.
-   - **Section 8 Traceability Summary:** leave all Epic/Story/Test columns as "—".
-   - **Section 9 Revision History:** one row: version 1.0, today's date, "elicit skill (initial run)", "Initial creation".
+   - **Section 4 System Architecture Overview:** populate after Section 3 is complete (BUCs are needed for sequence diagrams).
+     - **Section 4.0 Component Overview (COMP-001):**
+       - If `inputs/APIs/` contains YAML: extract components and their relationships → generate Mermaid `flowchart LR` diagram. Place client/external actors outside the `subgraph SYS` block; system components inside. Label edges with protocol (HTTP, gRPC, Event, DB) where determinable from the API spec.
+       - If no API YAML but inputs contain architectural/component descriptions (keywords: service, component, module, API, database, backend, frontend, microservice): generate best-effort diagram from described components. Add OQ: "COMP-001 was inferred from textual descriptions. Review accuracy and provide OpenAPI YAML in `inputs/APIs/` to improve precision."
+       - If no architectural input at all: insert placeholder diagram (Client → System box with one placeholder component). Add OQ: "Component diagram is missing. Describe system components in inputs or place OpenAPI YAML files in `inputs/APIs/`." Assign OQ to the user; Status=Open.
+       - Set Status=Pending, Accepted By = tech-lead or architect SH-xxx if identifiable, else most relevant SH-xxx.
+     - **Section 4.1+ Sequence Diagrams (SEQ-001, SEQ-002, ...):**
+       - For each BUC that describes a multi-step interaction involving more than one component: generate one sequence diagram subsection.
+       - Simple BUCs (single actor performing a single action with no visible component interaction) do not require a sequence diagram.
+       - If `inputs/APIs/` has YAML: use component names as participants; use endpoint operationId or path+method as message labels.
+       - If no API YAML: infer participants from BUC descriptions and add OQ per diagram: "Sequence diagram SEQ-xxx (BUC-xxx: [title]) was inferred from textual descriptions. Review and correct, or provide OpenAPI YAML in `inputs/APIs/` for a more accurate diagram."
+       - Assign SEQ-001, SEQ-002, ... sequentially. Set Status=Pending, Accepted By = same SH-xxx as the BUC's Accepted By.
+   - **Section 5.1 Functional Requirements:** one subsection per FR; assign FR-001, FR-002, ... sequentially. Set Status=Pending, Accepted By = responsible SH-xxx (from extraction), Accepted Date=—.
+   - **Section 5.2 Non-Functional Requirements:** assign NFR-001, NFR-002, ... Set Status=Pending, Accepted By = most-affected SH-xxx, Accepted Date=—.
+   - **Section 5.3 Constraints:** assign CON-001, CON-002, ... Set Status=Pending, Accepted By = SH-xxx who imposed the constraint, Accepted Date=—.
+   - **Section 6 Acceptance Criteria:** one or more AC entries per requirement using the nested bullet format. FR ACs use Given/When/Then sub-bullets. NFR ACs use a single Criterion sub-bullet. For every AC entry: set Status=Pending, Accepted By = same SH-xxx as the parent requirement's Accepted By field, Accepted Date=—.
+   - **Section 7 Open Questions:** one row per ambiguity; assign OQ-001, OQ-002, ... (include any OQs generated for missing/inferred architecture diagrams).
+   - **Section 8 Acceptance Status Overview:** build all eight subtables (Stakeholders, Business Use Cases, Component Overview, Sequence Diagrams, Functional Requirements, Non-Functional Requirements, Constraints, Acceptance Criteria) by reading back the acceptance fields from the sections just populated. One row per element. This is the last section populated.
+   - **Section 9 Traceability Summary:** leave all Epic/Story/Test columns as "—".
+   - **Section 10 Revision History:** one row: version 1.0, today's date, "elicit skill (initial run)", "Initial creation".
 5. Write the completed document to `artifacts/01-elicitation/elicitation-document.md`.
 6. Create `inputs/manifest.md` with the following content:
 
@@ -132,21 +155,27 @@ For every row in Section 6 where Status is "Open":
 **Acceptance field preservation rule (applies to all elements — BUC, FR, NFR, CON, AC, SH rows):**
 Never overwrite a Status of `Accepted` or `Rejected` with `Pending`. Only set `Status: Pending` on newly created entries. Status changes are made by humans, not by the skill.
 
-**Merge Requirements (Sections 4.1–4.3):**
+**Merge System Architecture (Section 4):**
+- If new API YAML files detected in `inputs/APIs/`: re-derive component diagram and update Section 4.0. Append a note below the existing diagram: `> Updated YYYY-MM-DD ([source]): [what changed]`. Never replace or remove existing diagram content if COMP-001 Status=Accepted.
+- Acceptance field preservation: never overwrite Accepted/Rejected on COMP-001 or any SEQ-xxx.
+- For each new BUC added during this update: add a new SEQ-xxx subsection. If no API YAML available, add OQ as in Create Mode.
+- If architecture OQs from a previous run are now resolved by new API YAML: update those OQ rows to Resolved; improve the diagram content; append update note.
+
+**Merge Requirements (Sections 5.1–5.3):**
 - New requirements: add new subsections with IDs continuing from the highest existing. Set Status=Pending, Accepted By = responsible SH-xxx, Accepted Date=—.
 - Existing requirements clarified by new inputs: append a note to the relevant field. Do not modify acceptance fields.
 
-**Merge Acceptance Criteria (Section 5):**
+**Merge Acceptance Criteria (Section 6):**
 - Add AC entries for all new requirements using the nested bullet format. Set Status=Pending, Accepted By = same SH-xxx as the parent requirement's Accepted By, Accepted Date=—.
 - Never modify Status, Accepted By, or Accepted Date on existing AC entries.
 
-**Merge Open Questions (Section 6):**
+**Merge Open Questions (Section 7):**
 - New ambiguities from new inputs: add new rows with IDs continuing from the highest existing OQ-xxx.
 
 **Finalize:**
 - Update `last-updated` in the YAML frontmatter to today's date.
-- **Rebuild Section 7 (Acceptance Status Overview) entirely** from the current acceptance fields across Sections 2–5. This is the one section that is fully replaced on every update — it is always a derived view, never merged. Read every element's current Status, Accepted By, and Accepted Date and rewrite all six subtables from scratch.
-- Append a row to Section 9 (Revision History): version = previous version + 0.1, today's date, "elicit skill (incremental run)", brief summary of changes.
+- **Rebuild Section 8 (Acceptance Status Overview) entirely** from the current acceptance fields across Sections 2–4. This is the one section that is fully replaced on every update — it is always a derived view, never merged. Read every element's current Status, Accepted By, and Accepted Date and rewrite all eight subtables from scratch (Stakeholders, BUCs, Component Overview, Sequence Diagrams, FRs, NFRs, Constraints, ACs).
+- Append a row to Section 10 (Revision History): version = previous version + 0.1, today's date, "elicit skill (incremental run)", brief summary of changes.
 - Append rows to `inputs/manifest.md` for all newly processed files, mode "incremental". In the Notes column, record any OQs that were resolved (e.g., "Resolved OQ-003, OQ-007").
 
 Proceed to Step 6 (Review Gate).
@@ -206,6 +235,8 @@ Do NOT invoke `/create-epics` automatically. The human must trigger it.
 |----------|--------|---------|
 | Stakeholder | SH-### | SH-001 |
 | Business Use Case | BUC-### | BUC-001 |
+| Component Overview | COMP-### | COMP-001 |
+| Sequence Diagram | SEQ-### | SEQ-001 |
 | Functional Requirement | FR-### | FR-001 |
 | Non-Functional Requirement | NFR-### | NFR-001 |
 | Constraint | CON-### | CON-001 |

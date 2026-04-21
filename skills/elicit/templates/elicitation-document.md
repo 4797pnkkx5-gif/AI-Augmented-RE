@@ -83,7 +83,69 @@ flowchart LR
 
 ---
 
-## 4. Requirements
+## 4. System Architecture Overview
+
+> Diagrams in this section describe the software structure as understood during elicitation.
+> They are derived from API definitions in `inputs/APIs/` or from architectural descriptions in other inputs.
+> If a diagram is missing or was inferred from text, see Section 7 (Open Questions) for the relevant OQ.
+
+### 4.0 Component Overview
+
+<!-- COMP-001: one component diagram per document -->
+<!-- Generated from inputs/APIs/ YAML (preferred) or inferred from textual inputs -->
+<!-- Node labels: short component names (3–4 words max) -->
+<!-- Edge labels: HTTP | gRPC | Event | DB | — (omit if unknown) -->
+<!-- Actors/clients placed outside the subgraph; system components inside -->
+<!-- On update: append new nodes/edges; never remove existing ones if Status=Accepted -->
+<!-- Status values: Pending | Accepted | Rejected -->
+
+```mermaid
+%%{init: {'theme': 'neutral'}}%%
+flowchart LR
+    CLIENT([Client])
+
+    subgraph SYS["<!-- System Name -->"]
+        COMP1[<!-- Component 1 -->]
+        COMP2[<!-- Component 2 -->]
+    end
+
+    CLIENT -->|HTTP| COMP1
+    COMP1 -->|DB| COMP2
+```
+
+- **Source:** <!-- input filename(s) -->
+- **Status:** Pending
+- **Accepted By:** <!-- SH-xxx (tech lead or architect; else most relevant SH-xxx) -->
+- **Accepted Date:** —
+
+---
+
+### SEQ-001: <!-- Title — e.g., "Share Location" -->
+
+<!-- ID format: SEQ-001, SEQ-002, ... (sequential, never reused) -->
+<!-- One sequence diagram per BUC that has multi-step component interaction -->
+<!-- Simple BUCs (single actor, single action, no inter-component calls) do not need a diagram -->
+<!-- On update: add new SEQ sections; append notes to existing ones; never alter if Status=Accepted -->
+
+- **Business Use Case:** <!-- BUC-xxx -->
+- **Description:** <!-- What interaction this diagram shows at the component level -->
+- **Source:** <!-- input filename(s) -->
+- **Status:** Pending
+- **Accepted By:** <!-- SH-xxx -->
+- **Accepted Date:** —
+
+```mermaid
+%%{init: {'theme': 'neutral'}}%%
+sequenceDiagram
+    participant C as Client
+    participant S as <!-- Service / Component -->
+    C->>S: <!-- request or action -->
+    S-->>C: <!-- response or result -->
+```
+
+---
+
+## 5. Requirements
 
 <!-- Functional: FR-001, FR-002, ... -->
 <!-- Non-Functional: NFR-001, NFR-002, ... -->
@@ -91,7 +153,7 @@ flowchart LR
 <!-- All IDs: sequential within their category, never reused -->
 <!-- On update: continue from the highest existing ID in each category -->
 
-### 4.1 Functional Requirements
+### 5.1 Functional Requirements
 
 #### FR-001: <!-- Title -->
 
@@ -101,14 +163,14 @@ flowchart LR
 - **Stakeholder:** <!-- SH-xxx -->
 - **Source:** <!-- input filename, section or quote if relevant -->
 - **Rationale:** <!-- Why this requirement exists -->
-- **Acceptance Criteria:** See Section 5 — AC-FR-001-xx
+- **Acceptance Criteria:** See Section 6 — AC-FR-001-xx
 - **Status:** Pending
 - **Accepted By:** <!-- SH-xxx (from the Stakeholder field above) -->
 - **Accepted Date:** —
 
 ---
 
-### 4.2 Non-Functional Requirements
+### 5.2 Non-Functional Requirements
 
 #### NFR-001: <!-- Title -->
 
@@ -118,14 +180,14 @@ flowchart LR
 - **Measurable Target:** <!-- Specific, testable metric — e.g., "response time < 200 ms at p99" -->
 - **Business Use Case:** <!-- BUC-xxx or "General" -->
 - **Source:** <!-- input filename -->
-- **Acceptance Criteria:** See Section 5 — AC-NFR-001-xx
+- **Acceptance Criteria:** See Section 6 — AC-NFR-001-xx
 - **Status:** Pending
 - **Accepted By:** <!-- SH-xxx (stakeholder most affected by this quality attribute) -->
 - **Accepted Date:** —
 
 ---
 
-### 4.3 Constraints
+### 5.3 Constraints
 
 #### CON-001: <!-- Title -->
 
@@ -139,7 +201,7 @@ flowchart LR
 
 ---
 
-## 5. Acceptance Criteria
+## 6. Acceptance Criteria
 
 <!-- ID format: AC-[parent ID]-[two-digit sequence] -->
 <!-- Examples: AC-FR-001-01, AC-FR-001-02, AC-NFR-001-01 -->
@@ -177,7 +239,7 @@ flowchart LR
 
 ---
 
-## 6. Open Questions
+## 7. Open Questions
 
 <!-- ID format: OQ-001, OQ-002, ... (sequential, never reused even after resolution) -->
 <!-- Status values: Open | Resolved | Deferred -->
@@ -190,10 +252,10 @@ flowchart LR
 
 ---
 
-## 7. Acceptance Status Overview
+## 8. Acceptance Status Overview
 
 > Auto-populated by the `/elicit` skill on every run. Do not edit manually.
-> Rebuilt from the current acceptance fields in Sections 2–5 on each update.
+> Rebuilt from the current acceptance fields in Sections 2–4 on each update.
 
 ### Stakeholders
 
@@ -206,6 +268,18 @@ flowchart LR
 | ID | Title | Accepted By | Status | Accepted Date |
 |----|-------|-------------|--------|---------------|
 | BUC-001 | <!-- Title --> | <!-- SH-xxx --> | Pending | — |
+
+### Component Overview
+
+| ID | Title | Accepted By | Status | Accepted Date |
+|----|-------|-------------|--------|---------------|
+| COMP-001 | Component Overview | <!-- SH-xxx --> | Pending | — |
+
+### Sequence Diagrams
+
+| ID | Title | BUC | Accepted By | Status | Accepted Date |
+|----|-------|-----|-------------|--------|---------------|
+| SEQ-001 | <!-- Title --> | <!-- BUC-xxx --> | <!-- SH-xxx --> | Pending | — |
 
 ### Functional Requirements
 
@@ -233,7 +307,7 @@ flowchart LR
 
 ---
 
-## 8. Traceability Summary
+## 9. Traceability Summary
 
 > Auto-populated by the `/trace` skill. Do not edit manually.
 
@@ -243,7 +317,7 @@ flowchart LR
 
 ---
 
-## 9. Revision History
+## 10. Revision History
 
 | Version | Date | Changed By | Changes |
 |---------|------|-----------|---------|
