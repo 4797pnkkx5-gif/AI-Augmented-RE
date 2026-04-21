@@ -27,23 +27,23 @@ Before doing anything else:
 
 ## Step 2 — Mode Detection
 
-Determine which mode to operate in before processing any inputs.
+Follow this decision tree top to bottom. Stop at the first matching condition.
 
-**Read `inputs/manifest.md`** if it exists. Extract the list of already-processed filenames from the "File" column.
+**Check 1 — Does the elicitation document exist?**
+- Open `artifacts/01-elicitation/elicitation-document.md`.
+- If the file does NOT exist → **CREATE MODE**. Proceed to Step 3, then Step 4a.
+- If the file exists → read it fully now, then continue to Check 2.
 
-**List all files** currently in `inputs/` (excluding README.md and manifest.md).
+**Check 2 — Does the document contain Section 4?**
+- Search the document text for the exact heading `## 4. System Architecture Overview`.
+- If this heading is NOT present → **UPDATE MODE (Section 4 backfill required)**. Proceed to Step 3, then Step 4b. Do NOT skip to Step 6.
+- If the heading is present → continue to Check 3.
 
-**New inputs** = files currently in `inputs/` that do not appear in the manifest.
-
-| Condition | Mode |
-|-----------|------|
-| `artifacts/01-elicitation/elicitation-document.md` does NOT exist | **Create** |
-| Document exists AND (new inputs found OR Section 4 "System Architecture Overview" is absent from the document) | **Update** |
-| Document exists AND no new inputs AND Section 4 is present | **Review-only** |
-
-**Section 4 absence check:** Before deciding Review-only, scan the existing document for `## 4. System Architecture Overview`. If this heading is not present, treat the run as Update mode regardless of manifest state. This handles documents created before Section 4 was introduced.
-
-**Review-only:** Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Then skip to Step 6 (Review Gate).
+**Check 3 — Are there new input files?**
+- Read `inputs/manifest.md` if it exists. Extract all filenames from the "File" column.
+- List all files currently in `inputs/` (excluding `inputs/README.md` and `inputs/manifest.md`).
+- If any file in `inputs/` does NOT appear in the manifest → **UPDATE MODE**. Proceed to Step 3, then Step 4b.
+- If all files are already in the manifest → **REVIEW-ONLY MODE**. Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Skip to Step 6.
 
 ---
 
