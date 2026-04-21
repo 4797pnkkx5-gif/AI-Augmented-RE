@@ -15,13 +15,15 @@
 
 ## Step 1 — Prerequisites Check
 
-Before doing anything else:
+Before doing anything else, execute these checks in order:
 
-1. List all files in `inputs/` recursively, excluding `inputs/README.md` and `inputs/manifest.md`.
-2. List all files in `inputs/APIs/` recursively. Note the count found. If `inputs/APIs/` does not exist or is empty, this is not an error — it triggers Open Questions in Step 4.
-3. If no files are found in `inputs/` at all: stop and tell the user "No input documents found in `inputs/`. Drop at least one document there and re-run `/elicit`."
-4. If any files cannot be read: note them — do not abort. They will be recorded as open questions.
-5. Confirm the path `artifacts/01-elicitation/` exists in the repo. If it does not: warn the user and stop.
+1. **Section 4 pre-check (mandatory — do this first):** If `artifacts/01-elicitation/elicitation-document.md` exists, open it now and search for the text `## 4. System Architecture Overview`. If this exact heading is NOT found in the file, set an internal flag: **SECTION_4_MISSING = true**. This flag forces Update mode in Step 2 and cannot be overridden by manifest state.
+
+2. List all files in `inputs/` recursively, excluding `inputs/README.md` and `inputs/manifest.md`.
+3. List all files in `inputs/APIs/` recursively. Note the count found. If `inputs/APIs/` does not exist or is empty, note that — Section 4 will use placeholder content and generate Open Questions.
+4. If no files are found in `inputs/` at all: stop and tell the user "No input documents found in `inputs/`. Drop at least one document there and re-run `/elicit`."
+5. If any files cannot be read: note them — do not abort. They will be recorded as open questions.
+6. Confirm the path `artifacts/01-elicitation/` exists in the repo. If it does not: warn the user and stop.
 
 ---
 
@@ -43,7 +45,8 @@ Follow this decision tree top to bottom. Stop at the first matching condition.
 - Read `inputs/manifest.md` if it exists. Extract all filenames from the "File" column.
 - List all files currently in `inputs/` (excluding `inputs/README.md` and `inputs/manifest.md`).
 - If any file in `inputs/` does NOT appear in the manifest → **UPDATE MODE**. Proceed to Step 3, then Step 4b.
-- If all files are already in the manifest → **REVIEW-ONLY MODE**. Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Skip to Step 6.
+- If all files are already in the manifest AND **SECTION_4_MISSING = false** → **REVIEW-ONLY MODE**. Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Skip to Step 6.
+- **REVIEW-ONLY MODE is forbidden if SECTION_4_MISSING = true.** If you reach this point with the flag set, go back and use Update mode.
 
 ---
 
