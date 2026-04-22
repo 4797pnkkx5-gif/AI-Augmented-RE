@@ -201,6 +201,34 @@ sequenceDiagram
 
 ---
 
+### 5.4 Assumptions
+
+<!-- ID format: ASMP-001, ASMP-002, ... (sequential, never reused) -->
+<!-- Status values: Pending | Validated | Invalidated -->
+<!-- Owner must be an SH-xxx. If unknown, generate an OQ (Severity = High). -->
+<!-- On update: protect Validated/Invalidated entries; append review note only -->
+
+| ID | Description | Owner (SH-xxx) | Source | Rationale | Impact if Wrong | Status | Accepted By | Accepted Date |
+|----|-------------|----------------|--------|-----------|-----------------|--------|-------------|---------------|
+| ASMP-001 | <!-- Statement treated as true without current verification --> | <!-- SH-xxx --> | <!-- input filename --> | <!-- Why this assumption is being made --> | <!-- What breaks if this assumption is wrong --> | Pending | <!-- SH-xxx --> | — |
+
+---
+
+### 5.5 Risks
+
+<!-- ID format: RSK-001, RSK-002, ... (sequential, never reused) -->
+<!-- Likelihood and Impact values: H (High) | M (Medium) | L (Low) -->
+<!-- Status values: Pending | Mitigated | Accepted | Closed -->
+<!-- Owner must be an SH-xxx. If unknown, raise an OQ (Severity = High). -->
+<!-- Mitigation = "TBD" triggers an OQ (Severity = High) -->
+<!-- On update: protect Mitigated/Accepted/Closed entries; append review note only -->
+
+| ID | Description | Likelihood (H/M/L) | Impact (H/M/L) | Owner (SH-xxx) | Mitigation | Source | Status | Accepted By | Accepted Date |
+|----|-------------|-------------------|----------------|----------------|-----------|--------|--------|-------------|---------------|
+| RSK-001 | <!-- Risk description — condition or event that could prevent achieving a goal --> | <!-- H/M/L --> | <!-- H/M/L --> | <!-- SH-xxx --> | <!-- How this risk will be reduced or handled --> | <!-- input filename --> | Pending | <!-- SH-xxx --> | — |
+
+---
+
 ## 6. Acceptance Criteria
 
 <!-- ID format: AC-[parent ID]-[two-digit sequence] -->
@@ -208,6 +236,15 @@ sequenceDiagram
 <!-- Use Given/When/Then for behavioural criteria (FR); use Criterion for measurable criteria (NFR) -->
 <!-- Status values: Pending | Accepted | Rejected -->
 <!-- Accepted By: pre-fill with the same SH-xxx as the parent requirement's Accepted By field -->
+<!-- AC QUALITY RULES — apply at generation time and review time:
+     1. ONE observable outcome per AC. If a Then clause contains two independent assertions joined by AND
+        (or tests two separate features), split into separate ACs.
+     2. Each AC must be independently executable — no AC should require another AC's post-condition as its starting state.
+     3. Given must describe a complete, reproducible starting state.
+     4. When must describe exactly one actor action or one system event.
+     5. Then must be a verifiable, observable output — not an intent ("the system should try to...").
+     6. NFR ACs: Criterion must copy the exact measurable threshold from the parent NFR's Measurable Target field verbatim.
+-->
 
 ### FR-001 Acceptance Criteria
 
@@ -243,12 +280,13 @@ sequenceDiagram
 
 <!-- ID format: OQ-001, OQ-002, ... (sequential, never reused even after resolution) -->
 <!-- Status values: Open | Resolved | Deferred -->
+<!-- Severity values: Critical (blocks APPROVED — invalid while Critical OQ is Open) | High (affects scope or architecture) | Medium (informational) | Low (cosmetic or deferred) -->
 <!-- On update: check every "Open" row against new inputs; update Status, Answer, and Source if resolved -->
-<!-- Unresolved open questions do not block APPROVED, but are flagged prominently at the review gate -->
+<!-- Critical OQs must be resolved before APPROVED is valid -->
 
-| ID | Question | Context | Raised By | Assigned To | Deadline | Status | Answer |
-|----|----------|---------|-----------|-------------|----------|--------|--------|
-| OQ-001 | <!-- Question text --> | <!-- Why unclear; which requirement it blocks or affects --> | <!-- SH-xxx or "elicit skill" --> | <!-- SH-xxx --> | <!-- YYYY-MM-DD --> | Open | — |
+| ID | Question | Context | Severity | Raised By | Assigned To | Deadline | Status | Answer |
+|----|----------|---------|----------|-----------|-------------|----------|--------|--------|
+| OQ-001 | <!-- Question text --> | <!-- Why unclear; which requirement it blocks or affects --> | Medium | <!-- SH-xxx or "elicit skill" --> | <!-- SH-xxx --> | <!-- YYYY-MM-DD --> | Open | — |
 
 ---
 
@@ -298,6 +336,18 @@ sequenceDiagram
 | ID | Title | Accepted By | Status | Accepted Date |
 |----|-------|-------------|--------|---------------|
 | CON-001 | <!-- Title --> | <!-- SH-xxx --> | Pending | — |
+
+### Assumptions
+
+| ID | Description (short) | Owner | Status | Accepted Date |
+|----|---------------------|-------|--------|---------------|
+| ASMP-001 | <!-- Short description --> | <!-- SH-xxx --> | Pending | — |
+
+### Risks
+
+| ID | Description (short) | Owner | Likelihood | Impact | Status | Accepted Date |
+|----|---------------------|-------|-----------|--------|--------|---------------|
+| RSK-001 | <!-- Short description --> | <!-- SH-xxx --> | <!-- H/M/L --> | <!-- H/M/L --> | Pending | — |
 
 ### Acceptance Criteria
 

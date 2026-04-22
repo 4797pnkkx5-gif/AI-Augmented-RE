@@ -58,3 +58,7 @@ Current skill: —
 - Do not invoke the next skill automatically — the human must type **APPROVED**
 - On update runs: never overwrite `Accepted` or `Rejected` status with `Pending`
 - Every extracted item must carry a source filename for traceability
+
+## Governance Reference
+
+Canonical governance rules (role definition, immutability, approval integrity, peer collaboration model) are defined in `skills/GOVERNANCE.md`. That file is kept current by `sync-framework.sh` on every framework sync run. If this file and `skills/GOVERNANCE.md` diverge on any governance question, `skills/GOVERNANCE.md` takes precedence.

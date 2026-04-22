@@ -97,7 +97,19 @@ fi
 echo ""
 rsync "${RSYNC_ARGS[@]}" "$FRAMEWORK_DIR/" "$TARGET_DIR/"
 
-# ── Step 5: Post-sync reminder ────────────────────────────────────────────────
+# ── Step 5: Governance drift check ───────────────────────────────────────────
+FRAMEWORK_GOV="$FRAMEWORK_DIR/skills/GOVERNANCE.md"
+TARGET_GOV="$TARGET_DIR/skills/GOVERNANCE.md"
+
+if [[ -f "$FRAMEWORK_GOV" ]] && [[ -f "$TARGET_GOV" ]]; then
+  if ! diff -q "$FRAMEWORK_GOV" "$TARGET_GOV" > /dev/null 2>&1; then
+    warn "Governance updated: skills/GOVERNANCE.md has changed."
+    warn "Review AGENTS.md in $TARGET_DIR and align with the new rules in skills/GOVERNANCE.md."
+    warn "Run: diff \"$TARGET_GOV\" \"$FRAMEWORK_GOV\" to see what changed."
+  fi
+fi
+
+# ── Step 6: Post-sync reminder ────────────────────────────────────────────────
 echo ""
 success "Framework files synced to $TARGET_DIR"
 echo ""
