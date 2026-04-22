@@ -1,219 +1,202 @@
 # Skill: elicit
 
-**Purpose:** Process raw input documents and produce (or incrementally update) the Elicitation Document — the foundational artifact of the RE pipeline.
+**Purpose:** Process raw input documents and produce (or incrementally update) the Elicitation Document — the foundational artifact of the RE pipeline. Handles requirements extraction, open question resolution, and architecture diagram generation in a single run.
 
 **Invocation:**
 - Claude Code: `/elicit`
 - GitHub Copilot: "Run the elicit skill" or "Follow `skills/elicit/skill.md`"
 
-**Inputs:** All files in `inputs/` (excluding `inputs/README.md` and `inputs/manifest.md`); API YAML files in `inputs/APIs/`
+**Inputs:**
+- Text/YAML/JSON/PDF/DOCX files in `inputs/` and its sub-folders
+- OpenAPI YAML files in `inputs/APIs/` (for architecture diagrams)
+
 **Outputs:**
 - `artifacts/01-elicitation/elicitation-document.md` (created or updated)
 - `inputs/manifest.md` (created or appended)
 
 ---
 
-## Step 1 — Prerequisites Check
+## Step 1 — Read all inputs
 
-Before doing anything else, execute these checks in order:
+Execute all reads now, before any other step.
 
-1. List all files in `inputs/` recursively, excluding `inputs/README.md` and `inputs/manifest.md`.
-2. If no files are found: stop and tell the user "No input documents found in `inputs/`. Drop at least one document there and re-run `/elicit`."
-3. If any files cannot be read: note them — do not abort. They will be recorded as open questions.
-4. Confirm the path `artifacts/01-elicitation/` exists in the repo. If it does not: warn the user and stop.
+**1a. Read every file in `inputs/APIs/`** (if the folder exists). Do this unconditionally — architecture diagrams must always reflect the current API definitions. For each OpenAPI 3.x YAML file, note:
+- Service name (`info.title`)
+- Endpoints: path + HTTP method + `operationId`
+- Dependencies: server URLs that reference other services
+- Key schema names from `components/schemas`
 
----
+If `inputs/APIs/` is empty or absent, note that — architecture diagrams will use placeholders.
 
-## Step 2 — Mode Detection
+**1b. List all other input files** in `inputs/` recursively, excluding `inputs/README.md` and `inputs/manifest.md`.
 
-Follow this decision tree top to bottom. Stop at the first matching condition.
-
-**Check 1 — Does the elicitation document exist?**
-- Open `artifacts/01-elicitation/elicitation-document.md`.
-- If the file does NOT exist → **CREATE MODE**. Proceed to Step 3, then Step 4a.
-- If the file exists → read it fully now, then continue to Check 2.
-
-**Check 2 — Does the document contain Section 4?**
-- Search the document text for the heading `## 4. System Architecture Overview`.
-- If NOT present → **UPDATE MODE (insert Section 4 placeholder)**. Proceed to Step 3, then Step 4b.
-- If present → continue to Check 3.
-
-**Check 3 — Are there new input files?**
-- Read `inputs/manifest.md` if it exists. Extract all filenames from the "File" column.
-- List all files currently in `inputs/` (excluding `inputs/README.md` and `inputs/manifest.md`).
-- If any file in `inputs/` does NOT appear in the manifest → **UPDATE MODE**. Proceed to Step 3, then Step 4b.
-- If all files are already in the manifest → **REVIEW-ONLY MODE**. Tell the user "No new inputs detected. Presenting the current Elicitation Document for review." Skip to Step 6.
+If no files exist anywhere in `inputs/`: stop and tell the user to add documents.
 
 ---
 
-## Step 3 — Input Processing
+## Step 2 — Read the existing document (if any)
 
-Apply to every new input file identified in Step 2 (files not in the manifest).
+Open `artifacts/01-elicitation/elicitation-document.md`.
 
-Read each file using the Read tool. For each file, extract:
+- **If the file does not exist:** use the template at `skills/elicit/templates/elicitation-document.md` as the starting point. This is **Create mode** — continue to Step 3.
+- **If the file exists:** read its full content. Note the highest existing ID in each namespace (SH-xxx, BUC-xxx, FR-xxx, NFR-xxx, CON-xxx, OQ-xxx, SEQ-xxx). This is **Update mode** — continue to Step 3.
+
+---
+
+## Step 3 — Identify new inputs and extract requirements
+
+Read `inputs/manifest.md` (if it exists). Extract all filenames already listed in the "File" column — these are already-processed files.
+
+**New inputs** = files from Step 1b that are NOT in the manifest.
+
+For each new input file, read it and extract:
 
 | What to extract | How to handle it |
 |----------------|-----------------|
 | **Stakeholders** | Name, role, organisation, concerns, contact info |
 | **Business-level needs** | What the system must enable — not technical features |
-| **Functional requirements** | Explicit "the system shall / must / should" statements |
-| **Non-functional requirements** | Performance, security, usability, reliability, scalability, compliance targets |
+| **Functional requirements** | "The system shall / must / should" statements |
+| **Non-functional requirements** | Performance, security, usability, reliability, compliance targets |
 | **Constraints** | Technology mandates, regulatory rules, budget/timeline limits |
-| **Ambiguities** | Anything unclear, contradictory, or undefined → candidate Open Questions |
-| **Responsible stakeholder per item** | For each BUC, FR, NFR, CON: note the primary/responsible SH-xxx — used to pre-fill the Accepted By field |
+| **Ambiguities** | Anything unclear → candidate Open Questions |
+| **Responsible stakeholder** | For each BUC/FR/NFR/CON: note which SH-xxx is responsible |
 
-**Source tagging:** Every extracted item must carry the originating filename as its Source. This is mandatory for traceability.
+Tag every extracted item with its source filename.
 
-**Unreadable files:** Add one Open Question per unreadable file: "File `[filename]` could not be read automatically. Manual extraction required." Assigned To: the user. Status: Open.
+**Unreadable files:** create one OQ per file: "File `[name]` could not be read. Manual extraction required."
 
-**GitHub Copilot note:** Copilot cannot read `.docx` or `.pdf` files directly. If such files are present and unread, add the open question above and remind the user to convert them (`pandoc file.docx -o file.md` or `pdftotext file.pdf file.txt`) and re-run.
-
----
-
-## Step 4a — Create Mode
-
-1. Read the template at `skills/elicit/templates/elicitation-document.md`.
-2. Replace `<!-- PROJECT_NAME -->` with the project name inferred from the inputs (or ask the user if unclear).
-3. Replace `<!-- CREATION_DATE -->` and `<!-- LAST_UPDATED_DATE -->` with today's date (YYYY-MM-DD).
-4. Populate each section using the extracted data from Step 3:
-   - **Section 2 Stakeholders:** one row per stakeholder found; assign SH-001, SH-002, ... sequentially. Set Status=Pending and Accepted Date=— for every row.
-   - **Section 3.0 Use Case Diagram:** After populating all BUC subsections, generate the Mermaid flowchart LR diagram. For each stakeholder in Section 2, add an actor node `SH[number]([role name])` (e.g., `SH001([Product Owner])`). For each BUC, add a use case node `BUC[number][BUC-xxx: short title]` inside the `subgraph SYS["Project Name"]` block. For each BUC's Primary Actor: draw a solid arrow (`-->`). For each BUC's secondary Stakeholders: draw dashed arrows (`-.->`) . Node IDs must use numbers only — no hyphens: `SH001`, `SH002`, `BUC001`, `BUC002`.
-   - **Section 3 Business Use Cases:** one subsection per BUC; assign BUC-001, BUC-002, ... sequentially.
-   - **Section 4 System Architecture Overview:** insert a placeholder only. The `/arch-diagrams` skill populates this section from `inputs/APIs/`. Add one Open Question: "Run `/arch-diagrams` to generate Component and Sequence Diagrams from the API definitions in `inputs/APIs/`."
-   - **Section 5.1 Functional Requirements:** one subsection per FR; assign FR-001, FR-002, ... sequentially. Set Status=Pending, Accepted By = responsible SH-xxx (from extraction), Accepted Date=—.
-   - **Section 5.2 Non-Functional Requirements:** assign NFR-001, NFR-002, ... Set Status=Pending, Accepted By = most-affected SH-xxx, Accepted Date=—.
-   - **Section 5.3 Constraints:** assign CON-001, CON-002, ... Set Status=Pending, Accepted By = SH-xxx who imposed the constraint, Accepted Date=—.
-   - **Section 6 Acceptance Criteria:** one or more AC entries per requirement using the nested bullet format. FR ACs use Given/When/Then sub-bullets. NFR ACs use a single Criterion sub-bullet. For every AC entry: set Status=Pending, Accepted By = same SH-xxx as the parent requirement's Accepted By field, Accepted Date=—.
-   - **Section 7 Open Questions:** one row per ambiguity; assign OQ-001, OQ-002, ... (include any OQs generated for missing/inferred architecture diagrams).
-   - **Section 8 Acceptance Status Overview:** build all eight subtables (Stakeholders, Business Use Cases, Component Overview, Sequence Diagrams, Functional Requirements, Non-Functional Requirements, Constraints, Acceptance Criteria) by reading back the acceptance fields from the sections just populated. One row per element. This is the last section populated.
-   - **Section 9 Traceability Summary:** leave all Epic/Story/Test columns as "—".
-   - **Section 10 Revision History:** one row: version 1.0, today's date, "elicit skill (initial run)", "Initial creation".
-5. Write the completed document to `artifacts/01-elicitation/elicitation-document.md`.
-6. Create `inputs/manifest.md` with the following content:
-
-```markdown
-# Input Manifest
-
-Tracks which input files have been processed by the `/elicit` skill.
-To reprocess a file: delete its row, then run `/elicit` again.
-
-## Processed Inputs
-
-| File | Processed Date | Run Mode | Notes |
-|------|---------------|----------|-------|
-| [filename] | YYYY-MM-DD | initial | — |
-```
-
-   Add one row per processed file.
-7. Proceed to Step 6 (Review Gate).
+If there are no new inputs and the document already exists: skip to Step 4 (still check OQs and update diagrams).
 
 ---
 
-## Step 4b — Update Mode
+## Step 4 — Resolve open questions
 
-The Elicitation Document is a **living document**. Do not regenerate it. Merge new content into the existing structure.
+Read every Open Question (Status = "Open") in the existing document. Check each one against **all** input files — not just new ones.
 
-1. Read the full existing `artifacts/01-elicitation/elicitation-document.md`.
-2. Note the highest existing ID in each namespace: SH-xxx, BUC-xxx, FR-xxx, NFR-xxx, CON-xxx, OQ-xxx. New IDs continue from there.
-3. Process each new input file (Step 3 extraction).
-
-**Open Questions Check (mandatory):**
-For every row in the Open Questions section (Section 7 in new documents; Section 6 in documents that predate the Section 4 update) where Status is "Open":
-- Check whether the new inputs contain information that resolves or partially answers the question.
-- If yes: update Status to "Resolved", write the answer in the Answer column, cite the source filename. Keep the original question text unchanged.
-- If a new input partially answers a question: update Status to "Partially Resolved" and note what remains unclear.
-
-**Merge Stakeholders (Section 2):**
-- New stakeholders: add new rows.
-- Known stakeholders appearing with new information: append `Updated: YYYY-MM-DD — [source filename]` to their Concerns cell. Do not replace existing content.
-
-**Merge Business Use Cases (Section 3):**
-- New BUCs: add new subsections. Set Status=Pending, Accepted By = primary actor SH-xxx, Accepted Date=—.
-- Existing BUCs refined by new inputs: append a note below the existing BUC: `> Updated YYYY-MM-DD ([source filename]): [what changed]`. Do not replace existing content.
-- **BUC diagram update (Section 3.0):** For each newly added BUC, add a new node inside the `subgraph SYS` block. For each newly added stakeholder, add a new actor node. Add the corresponding arrows. Never remove or alter existing nodes or arrows.
-
-**Acceptance field preservation rule (applies to all elements — BUC, FR, NFR, CON, AC, SH rows):**
-Never overwrite a Status of `Accepted` or `Rejected` with `Pending`. Only set `Status: Pending` on newly created entries. Status changes are made by humans, not by the skill.
-
-**Merge System Architecture (Section 4):**
-
-Check whether the current document contains the heading `## 4. System Architecture Overview`.
-
-**If Section 4 is ABSENT:**
-1. Rename section headings: `## 4.` → `## 5.`, `## 5.` → `## 6.`, `## 6.` → `## 7.`, `## 7.` → `## 8.`, `## 8.` → `## 9.`, `## 9.` → `## 10.`
-2. Update cross-references (e.g., "See Section 4 —" → "See Section 5 —").
-3. Insert a placeholder `## 4. System Architecture Overview` block after Section 3 with the note: "Run `/arch-diagrams` to generate diagrams from `inputs/APIs/`." Add OQ: "Architecture diagrams not yet generated. Run `/arch-diagrams`."
-
-**Section 4 diagram content is owned by `/arch-diagrams`.** Do not attempt to generate Mermaid diagrams here.
-- Acceptance field preservation: never overwrite Accepted/Rejected on COMP-001 or any SEQ-xxx.
-- For each new BUC added during this update: add a new SEQ-xxx subsection. If no API YAML available, add OQ as in Create Mode.
-- If architecture OQs from a previous run are now resolved by new API YAML: update those OQ rows to Resolved; improve the diagram content; append update note.
-
-**Merge Requirements (Sections 5.1–5.3):**
-- New requirements: add new subsections with IDs continuing from the highest existing. Set Status=Pending, Accepted By = responsible SH-xxx, Accepted Date=—.
-- Existing requirements clarified by new inputs: append a note to the relevant field. Do not modify acceptance fields.
-
-**Merge Acceptance Criteria (Section 6):**
-- Add AC entries for all new requirements using the nested bullet format. Set Status=Pending, Accepted By = same SH-xxx as the parent requirement's Accepted By, Accepted Date=—.
-- Never modify Status, Accepted By, or Accepted Date on existing AC entries.
-
-**Merge Open Questions (Section 7):**
-- New ambiguities from new inputs: add new rows with IDs continuing from the highest existing OQ-xxx.
-
-**Finalize:**
-- Update `last-updated` in the YAML frontmatter to today's date.
-- **Rebuild Section 8 (Acceptance Status Overview) entirely** from the current acceptance fields across Sections 2–4. This is the one section that is fully replaced on every update — it is always a derived view, never merged. Read every element's current Status, Accepted By, and Accepted Date and rewrite all eight subtables from scratch (Stakeholders, BUCs, Component Overview, Sequence Diagrams, FRs, NFRs, Constraints, ACs).
-- Append a row to Section 10 (Revision History): version = previous version + 0.1, today's date, "elicit skill (incremental run)", brief summary of changes.
-- Append rows to `inputs/manifest.md` for all newly processed files, mode "incremental". In the Notes column, record any OQs that were resolved (e.g., "Resolved OQ-003, OQ-007").
-
-Proceed to Step 6 (Review Gate).
+- If an input file answers a question: set Status = "Resolved", write the answer, cite the source filename.
+- If partially answered: set Status = "Partially Resolved", note what remains unclear.
 
 ---
 
-## Step 5 — (skipped; numbering reserved for future pre-review validation)
+## Step 5 — Write requirements into the document
+
+### Create mode (no existing document)
+
+Read the template. Replace `<!-- PROJECT_NAME -->` with the project name inferred from inputs. Replace date placeholders with today's date.
+
+Populate sections in this order:
+- **Section 2 Stakeholders:** one table row per stakeholder. IDs: SH-001, SH-002, ... Status=Pending.
+- **Section 3.0 BUC diagram:** Mermaid `flowchart LR`. Actor nodes outside subgraph, BUC nodes inside. Solid arrows for primary actors, dashed for secondary. Node IDs: SH001, BUC001 (no hyphens).
+- **Section 3 BUCs:** one subsection per BUC. IDs: BUC-001, BUC-002, ... Status=Pending, Accepted By = primary actor SH-xxx.
+- **Section 5 Requirements:** FR-001, FR-002, ...; NFR-001, ...; CON-001, ... Status=Pending, Accepted By = responsible SH-xxx.
+- **Section 6 Acceptance Criteria:** one or more AC entries per requirement. Nested bullet format. FR: Given/When/Then. NFR: Criterion. Status=Pending.
+- **Section 7 Open Questions:** one row per ambiguity. IDs: OQ-001, OQ-002, ...
+- **Section 9 Traceability Summary:** leave all columns as "—".
+- **Section 10 Revision History:** one row, version 1.0, today's date, "elicit skill (initial run)".
+
+Section 4 and Section 8 are populated in Steps 6 and 7.
+
+### Update mode (existing document)
+
+Merge new content. Preserve everything that exists.
+
+- **Section 2:** add new stakeholder rows. Append `Updated: YYYY-MM-DD — [source]` to concerns of existing stakeholders if new info found.
+- **Section 3.0 BUC diagram:** append new actor and BUC nodes. Never remove existing nodes.
+- **Section 3 BUCs:** add new BUC subsections. For existing BUCs with new info: append `> Updated YYYY-MM-DD ([source]): [what changed]`.
+- **Section 5 Requirements:** add new subsections continuing from the highest existing ID. Never overwrite existing content.
+- **Section 6 Acceptance Criteria:** add AC entries for new requirements only.
+- **Section 7 Open Questions:** add new rows for new ambiguities.
+- **Acceptance field preservation rule:** never overwrite Status=Accepted or Status=Rejected with Pending. Only newly created entries get Status=Pending.
 
 ---
 
-## Step 6 — Review Gate
+## Step 6 — Update architecture diagrams (always runs)
 
-Present the following to the user:
+This step always runs regardless of whether there were new input files.
 
-**1. Change summary**
+**Check:** does the document contain the heading `## 4. System Architecture Overview`?
 
-> I have [created / updated] the Elicitation Document.
->
-> **What changed:**
-> - [bullet: e.g., "Added 2 stakeholders: SH-003 (Jane Smith, Product Owner), SH-004 (Dev Lead)"]
-> - [bullet: e.g., "Added 4 functional requirements: FR-003–FR-006"]
-> - [bullet: e.g., "Resolved OQ-002 (authentication approach now clear from api-spec.yaml)"]
-> - [bullet: e.g., "Added 3 open questions: OQ-004–OQ-006"]
+**If NO (Section 4 is absent):**
+1. In the document, rename: `## 4.` → `## 5.`, `## 5.` → `## 6.`, `## 6.` → `## 7.`, `## 7.` → `## 8.`, `## 8.` → `## 9.`, `## 9.` → `## 10.`
+2. Update cross-references in the document body (e.g. "See Section 5 —" wherever Requirements are referenced).
+3. Insert `## 4. System Architecture Overview` after the last line of Section 3.
 
-**2. Open questions warning (if any OQs have Status "Open")**
+**Now generate or update Section 4 content using the API data read in Step 1a:**
 
-> **Warning — Unresolved Open Questions:**
->
-> The following questions remain open. They do not block approval, but downstream artifacts (Epics, Stories, SRS) built on unresolved questions may need revision when answers arrive.
->
-> | ID | Question | Assigned To | Deadline |
-> |----|----------|-------------|----------|
-> | OQ-001 | ... | ... | ... |
+**Section 4.0 — Component Overview (COMP-001):**
 
-**3. Review prompt**
+If API YAML was found in Step 1a: generate a Mermaid `flowchart LR` diagram:
+- One rectangular node per service inside `subgraph SYS["<project name>"]`
+- External clients/mobile apps as `([...])` nodes outside the subgraph
+- Arrows between services where one calls another; label with protocol (HTTP, gRPC, Event, DB)
+- Keep node labels short (2–4 words)
 
-> Please review the Elicitation Document at `artifacts/01-elicitation/elicitation-document.md`.
->
-> When you are satisfied, type **APPROVED** to proceed to the next phase (`/create-epics`).
-> Or provide corrections and I will apply them and re-present for review.
+If no API YAML: insert a placeholder diagram and add OQ: "Component diagram is missing. Place OpenAPI YAML files in `inputs/APIs/` and re-run `/elicit`."
 
-**4. On corrections:** Apply exactly what the user specifies. Re-present the summary and prompt.
+Set: **Status:** Pending | **Accepted By:** tech lead or most relevant SH-xxx | **Accepted Date:** —
 
-**5. On APPROVED:**
+If Section 4 already existed and COMP-001 Status is NOT Accepted: replace the diagram with the freshly derived version.
 
-> Elicitation phase complete. The Elicitation Document is approved.
->
-> You may now run `/create-epics` to transform this document into Epics.
+**Section 4.1+ — Sequence Diagrams (SEQ-001, SEQ-002, ...):**
 
-Do NOT invoke `/create-epics` automatically. The human must trigger it.
+For each service (or BUC with multi-step component interaction):
+- Generate a `sequenceDiagram` using operationIds as message names
+- Participants = Client + the service + any services it calls
+- Show the happy-path request/response only
+
+If no API YAML: add one OQ per BUC: "Sequence diagram for BUC-xxx is missing."
+
+Set Status=Pending, Accepted By = same SH-xxx as the BUC's Accepted By.
+
+For diagrams that already exist and are NOT Accepted: update content from current API YAML.
+
+---
+
+## Step 7 — Rebuild Acceptance Status Overview
+
+Replace Section 8 (Acceptance Status Overview) entirely. Build eight grouped tables from the current acceptance fields across Sections 2–4:
+
+1. Stakeholders
+2. Business Use Cases
+3. Component Overview
+4. Sequence Diagrams
+5. Functional Requirements
+6. Non-Functional Requirements
+7. Constraints
+8. Acceptance Criteria
+
+One row per element. Never merge — always fully replace this section.
+
+---
+
+## Step 8 — Write outputs
+
+1. Update `last-updated` in the YAML frontmatter to today's date.
+2. Append to Section 10 (Revision History): version = previous + 0.1, today's date, "elicit skill", brief summary.
+3. Write the complete document to `artifacts/01-elicitation/elicitation-document.md`.
+4. Append rows to `inputs/manifest.md` for all newly processed files (from Step 3). Mode = "initial" for first run, "incremental" for updates. Note resolved OQs in the Notes column.
+
+---
+
+## Step 9 — Review gate
+
+Present to the user:
+
+> **What changed in this run:**
+> - [new stakeholders added, if any]
+> - [new requirements added, if any]
+> - [OQs resolved, if any]
+> - [Section 4 diagrams added or updated]
+> - ["No requirement changes — diagrams updated only" if only Step 6 ran]
+
+If any OQs remain Open:
+> **Warning — Unresolved Open Questions:** [table of open OQs]
+> These do not block approval but will affect downstream artifacts.
+
+> Review `artifacts/01-elicitation/elicitation-document.md`.
+> Type **APPROVED** to proceed to `/create-epics`, or provide corrections.
+
+On APPROVED: confirm "Elicitation phase complete." Do not invoke the next skill automatically.
 
 ---
 
@@ -231,7 +214,7 @@ Do NOT invoke `/create-epics` automatically. The human must trigger it.
 | Acceptance Criterion | AC-[parent]-## | AC-FR-001-01 |
 | Open Question | OQ-### | OQ-001 |
 
-IDs are never reused, even after a stakeholder is removed or a question is resolved.
+IDs are never reused, even after deletion or resolution.
 
 ---
 
@@ -240,7 +223,7 @@ IDs are never reused, even after a stakeholder is removed or a question is resol
 | Situation | Action |
 |-----------|--------|
 | No files in `inputs/` | Stop. Instruct user to add documents. |
-| `inputs/manifest.md` missing but elicitation document exists | Treat all inputs as new (create mode for manifest, update mode for document). |
-| A file exists in the manifest but not on disk | Warn user: "File `[x]` was previously processed but is no longer in `inputs/`. This is noted but does not affect the current run." |
-| Conflicting information between two input files | Add an Open Question flagging the conflict. Cite both source files. |
-| Input file is in a language other than English | Process it as-is; note the language in the Source field. Add an Open Question if translation accuracy is a concern. |
+| Manifest missing, document exists | Treat all inputs as new. Create manifest. |
+| File in manifest but not on disk | Warn user; do not abort. |
+| Two inputs conflict | Add OQ flagging conflict; cite both sources. |
+| `inputs/APIs/` empty or absent | Insert placeholder diagram + OQ in Section 4. |
