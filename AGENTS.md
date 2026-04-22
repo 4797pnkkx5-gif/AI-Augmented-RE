@@ -1,4 +1,4 @@
-# <!-- PROJECT_NAME --> — AI Context
+# AI-Augmented RE Framework — AI Context
 
 ## Role & Working Model
 
@@ -25,36 +25,33 @@ The human you are working with is also an expert Requirements Engineer. This is 
 
 ---
 
-## Project
+## Framework Context
 
-Requirements Engineering for **<!-- PROJECT_NAME -->** using the AI-Augmented RE framework.
+This repository is the **AI-Augmented RE framework** — a portable, repo-based RE system for Claude Code and GitHub Copilot. It provides the skills, templates, and tooling for the full RE lifecycle.
 
-## Active Phase
-
-<!-- Update this line when starting a new phase -->
-Current skill: —
+When working in this repository, you are maintaining the framework itself (not running RE on a specific project). Framework-owned files: `skills/`, `setup/`, `setup.sh`, `sync-framework.sh`, `inputs/README.md`. Project-owned files in test projects: `AGENTS.md`, `CLAUDE.md`, `inputs/`, `artifacts/`.
 
 ## RE Pipeline
 
-| Phase | Skill | Artifact | Status |
-|-------|-------|----------|--------|
-| 1 | `/elicit` | Elicitation Document | Pending |
-| 2 | `/create-epics` | Epics | Pending |
-| 3 | `/create-stories` | User Stories | Pending |
-| 4 | `/create-srs` | Software Requirements Specification | Pending |
-| 5 | `/create-tests` | Test Concept + Test Cases | Pending |
-| 6 | `/trace` | Traceability Matrix | Pending |
+```
+Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test Cases
+               ↑ review gate        ↑ gate   ↑ gate       ↑ gate   ↑ gate
+```
+
+| Phase | Skill | Artifact |
+|-------|-------|----------|
+| 1 | `/elicit` | Elicitation Document |
+| 1b | `/arch-diagrams` | Section 4 — Component + Sequence Diagrams |
+| 2 | `/create-epics` | Epics |
+| 3 | `/create-stories` | User Stories |
+| 4 | `/create-srs` | Software Requirements Specification |
+| 5 | `/create-tests` | Test Concept + Test Cases |
+| 6 | `/trace` | Traceability Matrix |
 
 ## Key Paths
 
-- Inputs: `inputs/` — drop raw stakeholder documents here
-- Artifacts: `artifacts/` — generated RE artifacts
-- Skills: `skills/` — skill definitions (read these to understand each phase)
-
-## Rules
-
-- Follow the active skill definition exactly — see `skills/<skill>/skill.md`
-- Do not skip human review gates
-- Do not invoke the next skill automatically — the human must type **APPROVED**
-- On update runs: never overwrite `Accepted` or `Rejected` status with `Pending`
-- Every extracted item must carry a source filename for traceability
+- Skills: `skills/` — skill definitions
+- Templates: `skills/*/templates/` — artifact templates
+- Setup script: `setup.sh` — project bootstrap
+- Sync script: `sync-framework.sh` — push framework updates to existing projects
+- Test project: `~/projects/linked-locket/` — evaluation target

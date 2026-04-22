@@ -186,6 +186,15 @@ If any OQs remain Open:
 > **Warning — Unresolved Open Questions:** [table of open OQs]
 > These do not block approval but will affect downstream artifacts.
 
+Then give your **Professional Assessment** — cite specific element IDs:
+- NFRs with no measurable target (e.g., "fast", "secure", "easy to use" — no number)
+- Acceptance criteria that test more than one condition or cannot be independently verified
+- Contradictions between two or more elements
+- BUCs or FRs with no owning stakeholder
+- Open Questions that appear answerable from the input content but were not resolved
+
+If none of these issues exist: state "No quality concerns — document is ready for approval."
+
 > Review `artifacts/01-elicitation/elicitation-document.md`.
 > Type **APPROVED** to proceed to `/create-epics`, or provide corrections.
 
