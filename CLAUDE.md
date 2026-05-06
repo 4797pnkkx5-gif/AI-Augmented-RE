@@ -71,14 +71,24 @@ ai-augmented-re/
 ├── CLAUDE.md                    — this file (framework agent definition)
 ├── AGENTS.md                    — shared context (both platforms)
 ├── setup.sh                     — project bootstrap script
+├── sync-framework.sh            — push framework updates to existing projects
+├── AUDIT-PROTOCOL-ELICITATION.md  — quality audit protocol (AP-ELIC-001)
+├── AUDIT-REPORT-ELICITATION.md    — initial audit findings (2026-04-22)
 ├── setup/
 │   ├── CLAUDE.md.template       — project-facing CLAUDE.md (created by setup.sh)
 │   └── AGENTS.md.template       — AGENTS.md template (created by setup.sh)
 ├── skills/
-│   └── elicit/
-│       ├── skill.md             — /elicit skill definition
-│       └── templates/
-│           └── elicitation-document.md
+│   ├── GOVERNANCE.md            — canonical governance rules (synced to projects)
+│   ├── elicit/
+│   │   ├── skill.md             — /elicit skill definition
+│   │   └── templates/
+│   │       └── elicitation-document.md
+│   └── arch-diagrams/
+│       └── skill.md             — /arch-diagrams skill definition
+├── examples/
+│   └── 01-elicitation/
+│       └── elicitation-document-example.md  — benchmark artifact (PocketPing)
+├── docs/                        — framework documentation and specifications
 ├── inputs/                      — drop raw documents here
 │   └── README.md
 └── artifacts/                   — generated RE artifacts (version-controlled)

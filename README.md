@@ -18,6 +18,7 @@ A **Pipeline Agent** (defined in `CLAUDE.md` / `AGENTS.md`) orchestrates the ful
 | Skill | Invoke | Output |
 |-------|--------|--------|
 | Elicitation | `/elicit` | Elicitation Document (stakeholders, BUC diagram, requirements, ACs) |
+| Architecture Diagrams | `/arch-diagrams` | Section 4 — Component + Sequence Diagrams |
 | Epics | `/create-epics` | Epics |
 | User Stories | `/create-stories` | User Stories |
 | SRS | `/create-srs` | Software Requirements Specification |
@@ -78,6 +79,9 @@ ai-augmented-re/
 ├── CLAUDE.md                    # Pipeline Agent definition (Claude Code)
 ├── AGENTS.md                    # Shared AI context (both platforms)
 ├── setup.sh                     # Project bootstrap script
+├── sync-framework.sh            # Push framework updates to existing projects
+├── AUDIT-PROTOCOL-ELICITATION.md  # Quality audit protocol (AP-ELIC-001)
+├── AUDIT-REPORT-ELICITATION.md    # Initial audit findings (2026-04-22)
 ├── .gitignore
 ├── .github/
 │   └── copilot-instructions.md  # Copilot equivalent of CLAUDE.md
@@ -85,10 +89,16 @@ ai-augmented-re/
 │   ├── CLAUDE.md.template       # Project-facing CLAUDE.md (used by setup.sh)
 │   └── AGENTS.md.template       # AGENTS.md template (used by setup.sh)
 ├── skills/
-│   └── elicit/
-│       ├── skill.md             # /elicit skill definition
-│       └── templates/
-│           └── elicitation-document.md
+│   ├── GOVERNANCE.md            # Canonical governance rules (synced to projects)
+│   ├── elicit/
+│   │   ├── skill.md             # /elicit skill definition
+│   │   └── templates/
+│   │       └── elicitation-document.md
+│   └── arch-diagrams/
+│       └── skill.md             # /arch-diagrams skill definition
+├── examples/
+│   └── 01-elicitation/
+│       └── elicitation-document-example.md  # Benchmark artifact (PocketPing)
 ├── inputs/                      # Drop your raw documents here
 │   └── README.md
 └── artifacts/                   # Generated RE artifacts (version-controlled)
@@ -118,6 +128,8 @@ Every artifact element carries a unique ID. IDs link forward through the pipelin
 ```
 SH-001 → BUC-001 → FR-001 → EP-001 → US-001 → TC-001
 ```
+
+The elicitation phase also produces first-class entities outside this linear chain: Assumptions (`ASMP-xxx`) and Risks (`RSK-xxx`), both with ownership, status, and audit fields.
 
 IDs are never reused, even after deletion or resolution.
 

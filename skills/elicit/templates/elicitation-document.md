@@ -19,10 +19,24 @@ approved-date: <!-- APPROVAL_DATE -->
 
 ## 1. Project Overview
 
+### 1.1 Background
+
 **Project Name:** <!-- PROJECT_NAME -->
-**Business Context:** <!-- One paragraph: what problem does this solve, what is the business driver -->
-**Scope Summary:** <!-- What is in scope; what is explicitly out of scope -->
+**Business Context:** <!-- One paragraph: what the system is and what business need it serves -->
 **Primary Contacts:** <!-- Who commissioned this work -->
+
+### 1.2 Problem Statement
+
+<!-- What specific problem does this system solve? For whom? What is the impact if this problem remains unsolved?
+     If not extractable from inputs, leave as placeholder — the skill will generate OQ-Medium. -->
+<!-- Problem: -->
+<!-- For whom: -->
+<!-- Impact if unsolved: -->
+
+### 1.3 Scope
+
+**In scope:** <!-- What this system explicitly covers -->
+**Out of scope:** <!-- What this system explicitly does NOT cover -->
 
 ---
 
@@ -153,11 +167,15 @@ sequenceDiagram
 <!-- All IDs: sequential within their category, never reused -->
 <!-- On update: continue from the highest existing ID in each category -->
 
+<!-- RFC 2119 NORMATIVE LANGUAGE: The key words SHALL, SHALL NOT, SHOULD, SHOULD NOT, and MAY in this
+     section are to be interpreted as described in RFC 2119 (https://www.rfc-editor.org/rfc/rfc2119).
+     Priority to RFC 2119 mapping: Must Have → SHALL | Should Have → SHOULD | Could Have → MAY -->
+
 ### 5.1 Functional Requirements
 
 #### FR-001: <!-- Title -->
 
-- **Description:** <!-- Full description of the requirement -->
+- **Description:** <!-- "The system SHALL/SHOULD/MAY [verb] [object] [condition]" — use RFC 2119 obligation keywords -->
 - **Priority:** <!-- Must Have / Should Have / Could Have / Won't Have -->
 - **Business Use Case:** <!-- BUC-xxx -->
 - **Stakeholder:** <!-- SH-xxx -->
@@ -174,7 +192,7 @@ sequenceDiagram
 
 #### NFR-001: <!-- Title -->
 
-- **Description:** <!-- Full description -->
+- **Description:** <!-- "The system SHALL/SHOULD [quality attribute] [condition]" — use RFC 2119 obligation keywords -->
 - **Category:** <!-- Performance / Security / Usability / Reliability / Scalability / Maintainability / Compliance -->
 - **Priority:** <!-- Must Have / Should Have / Could Have / Won't Have -->
 - **Measurable Target:** <!-- Specific, testable metric — e.g., "response time < 200 ms at p99" -->

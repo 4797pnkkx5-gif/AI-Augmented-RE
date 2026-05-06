@@ -1,7 +1,7 @@
 # AI-Augmented RE — Governance Rules
 
-Version: 1.1.0
-Last updated: 2026-04-22
+Version: 1.2.0
+Last updated: 2026-05-06
 
 This file is the **canonical source** for governance rules. It lives in `skills/` and is synced to every project by `sync-framework.sh`. When this file and `AGENTS.md` diverge, this file takes precedence.
 
@@ -61,3 +61,5 @@ The AI must explicitly state these blockers in the review gate before presenting
 - Do not invoke the next skill automatically — the human must type APPROVED
 - Every extracted item must carry a source filename for traceability
 - IDs are never reused, even after deletion or resolution
+- FR/NFR descriptions must use RFC 2119 obligation language: SHALL (mandatory), SHOULD (recommended), MAY (optional), SHALL NOT / MUST NOT (prohibition). Informal language ("must be able to", "should") must be rewritten using the correct RFC 2119 keyword based on Priority (Must Have → SHALL, Should Have → SHOULD, Could Have → MAY).
+- Section 1 of the Elicitation Document must contain a Problem Statement (1.2) that answers: what specific problem, for whom, and what the impact is if unsolved. If absent: generate OQ Severity=Medium.

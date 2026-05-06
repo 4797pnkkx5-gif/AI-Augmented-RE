@@ -24,10 +24,20 @@ approved-date: 2026-04-15
 
 ## 1. Project Overview
 
+### 1.1 Background
+
 **Project Name:** PocketPing
 **Business Context:** PocketPing is a mobile app that lets users share their real-time location with a trusted circle of contacts. The business driver is personal safety: users want to let family members or close friends know where they are without exposing their location publicly. The core value proposition is simplicity — share location with one tap, revoke with one tap.
-**Scope Summary:** In scope: iOS and Android mobile apps, real-time location sharing with invited contacts, location history (last 24 hours), push notifications when a contact arrives at or leaves a designated place. Out of scope: web client, public location feeds, advertising, social features beyond the trusted circle.
 **Primary Contacts:** Alex Chen (Product Owner) — alex.chen@pocketping.example.com
+
+### 1.2 Problem Statement
+
+People in personal safety situations — walking home alone, meeting strangers, travelling — want a trusted contact to know where they are without broadcasting their location publicly or relying on fragmented workarounds (manual SMS, voice calls, or third-party apps with excessive data collection). Existing solutions either require the contact to actively ask ("where are you?") or expose location data to platforms with opaque privacy practices. **Impact if unsolved:** users in potentially unsafe situations cannot discreetly signal their whereabouts to trusted people; families cannot verify that a vulnerable relative arrived safely without an explicit check-in call.
+
+### 1.3 Scope
+
+**In scope:** iOS and Android mobile apps, real-time location sharing with invited contacts, location history (last 24 hours), push notifications when a trusted contact arrives at or leaves a user-defined geographic boundary.
+**Out of scope:** web client, public location feeds, advertising features, social features beyond the trusted circle, third-party data sharing, location sharing with more than the explicitly invited contacts.
 
 ---
 
@@ -226,11 +236,13 @@ sequenceDiagram
 
 ## 5. Requirements
 
+> The key words **SHALL**, **SHALL NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** in this section are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Mapping: Must Have → SHALL | Should Have → SHOULD | Could Have → MAY.
+
 ### 5.1 Functional Requirements
 
 #### FR-001: Start Location Sharing Session
 
-- **Description:** A user must be able to initiate a real-time location sharing session, selecting one or more contacts from their trusted circle. The session must begin broadcasting the user's location to the selected contacts within 5 seconds of confirmation.
+- **Description:** The system SHALL allow an authenticated user to initiate a real-time location sharing session by selecting one or more contacts from their trusted circle. The system SHALL begin broadcasting the user's GPS location to the selected contacts within 5 seconds of the user confirming the session.
 - **Priority:** Must Have
 - **Business Use Case:** BUC-001
 - **Stakeholder:** SH-001
@@ -245,7 +257,7 @@ sequenceDiagram
 
 #### FR-002: Stop Location Sharing
 
-- **Description:** A user must be able to stop sharing their location at any time, with all active sharing sessions for that user terminated within 3 seconds. Contacts must no longer receive location updates after termination.
+- **Description:** The system SHALL allow a user to stop all active location sharing sessions at any time. All sessions SHALL be terminated within 3 seconds of the stop action. The system SHALL NOT deliver further location updates to any contact after session termination.
 - **Priority:** Must Have
 - **Business Use Case:** BUC-001
 - **Stakeholder:** SH-001
@@ -260,7 +272,7 @@ sequenceDiagram
 
 #### FR-003: View Contact Live Location
 
-- **Description:** A user must be able to view the current position of any trusted contact who has an active sharing session, displayed on a map with a location pin and a last-updated timestamp.
+- **Description:** The system SHALL display the current GPS position of any trusted contact who has an active sharing session on a map, represented as a location pin with a last-updated timestamp visible to the viewing user.
 - **Priority:** Must Have
 - **Business Use Case:** BUC-002
 - **Stakeholder:** SH-001
@@ -275,7 +287,7 @@ sequenceDiagram
 
 #### FR-004: View 24-Hour Location Trail
 
-- **Description:** When viewing a contact's location, the user must be able to see a movement trail showing the contact's path for the previous 24 hours, displayed as a polyline on the map.
+- **Description:** The system SHOULD render a movement trail for a contact being viewed, displayed as a polyline on the map, covering the contact's path for the previous 24 hours.
 - **Priority:** Should Have
 - **Business Use Case:** BUC-002
 - **Stakeholder:** SH-001
@@ -290,7 +302,7 @@ sequenceDiagram
 
 #### FR-005: Invite Contact to Trusted Circle
 
-- **Description:** A user must be able to invite a new contact to their trusted circle via a shareable invite link or by entering a phone number. The invited contact must receive a notification and must explicitly accept the invitation before any location data is shared.
+- **Description:** The system SHALL allow a user to invite a new contact to their trusted circle via a shareable invite link or by entering a phone number. The invited contact SHALL receive an in-app notification and SHALL explicitly accept the invitation before any location data is shared with them.
 - **Priority:** Must Have
 - **Business Use Case:** BUC-003
 - **Stakeholder:** SH-001
@@ -305,7 +317,7 @@ sequenceDiagram
 
 #### FR-006: Revoke Contact Access
 
-- **Description:** A user must be able to remove a contact from their trusted circle at any time. Removal must immediately terminate any active location sharing sessions with that contact.
+- **Description:** The system SHALL allow a user to remove any contact from their trusted circle at any time. The system SHALL immediately terminate all active location sharing sessions with the removed contact upon removal.
 - **Priority:** Must Have
 - **Business Use Case:** BUC-003
 - **Stakeholder:** SH-001
@@ -320,7 +332,7 @@ sequenceDiagram
 
 #### FR-007: Define a Place
 
-- **Description:** A user must be able to create a named geographic boundary ("Place") by searching for an address or dropping a pin, then adjusting a radius (50m–5km). The system must store the place and associate it with the user's account.
+- **Description:** The system SHOULD allow a user to create a named geographic boundary ("Place") by searching for an address or dropping a pin and adjusting a radius (50m–5km). The system SHALL store the Place and associate it with the user's account.
 - **Priority:** Should Have
 - **Business Use Case:** BUC-004
 - **Stakeholder:** SH-001
@@ -335,7 +347,7 @@ sequenceDiagram
 
 #### FR-008: Geofence Notification
 
-- **Description:** When a trusted contact with an active sharing session enters or exits a user's defined Place, the system must send the user a push notification within 60 seconds of the boundary crossing event.
+- **Description:** The system SHOULD send the user a push notification within 60 seconds when a trusted contact with an active sharing session enters or exits a user-defined Place boundary.
 - **Priority:** Should Have
 - **Business Use Case:** BUC-004
 - **Stakeholder:** SH-001
@@ -352,7 +364,7 @@ sequenceDiagram
 
 #### NFR-001: Location Update Latency
 
-- **Description:** Location updates must propagate from the sharing user's device to a viewing contact's device with low latency to maintain a sense of real-time presence.
+- **Description:** The system SHALL propagate location updates from the sharing user's device to a viewing contact's device with sufficiently low latency to maintain a sense of real-time presence. See Measurable Target for the specific threshold.
 - **Category:** Performance
 - **Priority:** Must Have
 - **Measurable Target:** End-to-end location update latency must be < 5 seconds at p95 under 10,000 concurrent sharing sessions.
@@ -367,7 +379,7 @@ sequenceDiagram
 
 #### NFR-002: Session Authentication
 
-- **Description:** All API endpoints must require valid authentication. Unauthenticated requests must be rejected.
+- **Description:** The system SHALL require valid authentication on all API endpoints. The system SHALL reject all unauthenticated requests.
 - **Category:** Security
 - **Priority:** Must Have
 - **Measurable Target:** 100% of API endpoints return HTTP 401 for requests with no valid session token. Zero endpoints accessible without authentication in penetration test.
@@ -382,7 +394,7 @@ sequenceDiagram
 
 #### NFR-003: Data Retention Compliance
 
-- **Description:** Location data must not be retained beyond the GDPR-mandated minimum necessary period.
+- **Description:** The system SHALL NOT retain location data beyond the minimum period necessary as required by GDPR Article 5(1)(e) (storage limitation principle). See Measurable Target for the specific retention window.
 - **Category:** Compliance
 - **Priority:** Must Have
 - **Measurable Target:** All location records with a timestamp older than 30 days from the current date must be automatically deleted within 24 hours of reaching that threshold.
@@ -397,7 +409,7 @@ sequenceDiagram
 
 #### NFR-004: Battery Impact
 
-- **Description:** The app's background location polling must not cause excessive battery drain on the user's device.
+- **Description:** The system SHOULD minimise battery consumption caused by background location polling on the user's device. See Measurable Target for the specific threshold.
 - **Category:** Usability
 - **Priority:** Should Have
 - **Measurable Target:** Background location polling must consume < 5% of device battery per hour when actively sharing, measured on iPhone 14 and Samsung Galaxy S23 under standard lab conditions.

@@ -31,6 +31,8 @@ Read every input file now. Do not skip files that appear in the manifest — all
 | What to extract | How |
 |----------------|-----|
 | Stakeholders | Name, role, organisation, concerns, contact |
+| Problem Statement | The specific problem being solved, for whom, and what happens if it remains unsolved |
+| Scope | What is explicitly in scope and what is explicitly out of scope |
 | Business-level needs | What the system must enable — not implementation details |
 | Functional requirements | "The system shall / must / should" statements |
 | Non-functional requirements | Performance, security, usability, reliability, compliance targets with measurable values where stated |
@@ -76,6 +78,21 @@ Do not modify the element. Append this note below it:
 Assign the next available ID in the appropriate namespace. Populate all fields. Set Status=Pending, Accepted By = responsible SH-xxx, Accepted Date=—.
 
 Apply this logic for: Stakeholders, Business Use Cases, Functional Requirements, Non-Functional Requirements, Constraints, Assumptions, Risks.
+
+**Problem Statement synthesis:** Populate Section 1.2 and 1.3 from extracted content:
+- Section 1.2 (Problem Statement): write 2–4 sentences — what specific problem is being solved, for whom, and what the impact is if unsolved.
+- Section 1.3 (Scope): list explicit in-scope items and explicit out-of-scope items extracted from inputs.
+- If inputs do not contain a clear problem statement: leave a placeholder comment and generate OQ Severity=Medium: "No problem statement found in inputs — what specific problem does this system address, for whom, and what is the impact if unsolved?"
+
+**RFC 2119 language enforcement:** When writing or updating the Description field of any FR or NFR, express the requirement using RFC 2119 obligation keywords. Apply this mapping:
+- Priority = Must Have → "The system SHALL [verb] [object] [condition]"
+- Priority = Should Have → "The system SHOULD [verb] [object] [condition]"
+- Priority = Could Have → "The system MAY [verb] [object] [condition]"
+- Prohibition (explicit exclusion) → "The system SHALL NOT [verb] [object]"
+
+For existing Pending FRs/NFRs with informal language ("must be able to", "must", "should"): rewrite the Description to use the correct RFC 2119 keyword based on Priority. For Accepted/Rejected elements: do not modify; append a review note if the description still uses informal language.
+
+After synthesis, if any Pending FR/NFR Description does not contain a RFC 2119 keyword (SHALL, SHOULD, MAY, SHALL NOT, MUST, MUST NOT): add OQ Severity=Low: "[FR/NFR-xxx] description does not use RFC 2119 obligation language — reformat as 'The system SHALL/SHOULD/MAY...'"
 
 **ASMP synthesis:** For ASMP entries with Status = Pending: apply the same match/refine logic. Status values are Pending | Validated | Invalidated — protect Validated/Invalidated; append review note only. For any ASMP with no Owner (SH-xxx): add OQ Severity=High: "ASMP-xxx has no assigned owner — who is accountable for validating this assumption?"
 
@@ -224,12 +241,13 @@ One row per element. This section is always fully replaced — never merged.
 
 Present to the user:
 
-> **What changed in this run:**
-> - [refined requirements: list FR/NFR IDs that were updated]
-> - [new elements: list new IDs added]
-> - [resolved OQs: list OQ IDs resolved]
-> - [architecture: Section 4 added / diagrams updated / no change]
-> - [review notes added to Accepted elements: list IDs]
+> **Changes in this run:**
+> - **ADDED:** [list new IDs added — FR-xxx, NFR-xxx, SH-xxx, BUC-xxx, ASMP-xxx, RSK-xxx, OQ-xxx]
+> - **REFINED:** [list Pending elements updated with new or more precise information — FR-xxx (reason), NFR-xxx (reason)]
+> - **UNCHANGED:** [list Pending elements with no new information this run, or omit if the list is long]
+> - **RESOLVED:** [list OQ-xxx IDs resolved, with one-line answer summary]
+> - **PROTECTED:** [list Accepted/Rejected/Validated/Mitigated elements that were not modified — review notes appended if any]
+> - **Architecture:** [Section 4 added / diagrams updated / no change]
 
 If any OQs remain Open:
 > **Warning — Unresolved Open Questions:** [table of open OQs with Severity column]

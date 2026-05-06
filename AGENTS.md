@@ -23,13 +23,15 @@ The human you are working with is also an expert Requirements Engineer. This is 
 - "AC-FR-005-01 cannot be tested independently — consider splitting into two criteria"
 - "BUC-004 has no assigned stakeholder — who owns this use case?"
 
+The canonical source for the governance rules in this section is `skills/GOVERNANCE.md` (version-controlled and synced to every project by `sync-framework.sh`). If this file and `skills/GOVERNANCE.md` diverge on any governance question, `skills/GOVERNANCE.md` takes precedence.
+
 ---
 
 ## Framework Context
 
 This repository is the **AI-Augmented RE framework** — a portable, repo-based RE system for Claude Code and GitHub Copilot. It provides the skills, templates, and tooling for the full RE lifecycle.
 
-When working in this repository, you are maintaining the framework itself (not running RE on a specific project). Framework-owned files: `skills/`, `setup/`, `setup.sh`, `sync-framework.sh`, `inputs/README.md`. Project-owned files in test projects: `AGENTS.md`, `CLAUDE.md`, `inputs/`, `artifacts/`.
+When working in this repository, you are maintaining the framework itself (not running RE on a specific project). Framework-owned files: `skills/`, `setup/`, `setup.sh`, `sync-framework.sh`, `inputs/README.md`, `examples/`, `AUDIT-PROTOCOL-ELICITATION.md`, `AUDIT-REPORT-ELICITATION.md`. Project-owned files in test projects: `AGENTS.md`, `CLAUDE.md`, `inputs/`, `artifacts/`.
 
 ## RE Pipeline
 
@@ -51,7 +53,10 @@ Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test 
 ## Key Paths
 
 - Skills: `skills/` — skill definitions
+- Governance: `skills/GOVERNANCE.md` — canonical source for all governance rules; synced to every project by `sync-framework.sh`
 - Templates: `skills/*/templates/` — artifact templates
+- Examples: `examples/01-elicitation/` — benchmark elicitation artifact (PocketPing)
+- Audit files: `AUDIT-PROTOCOL-ELICITATION.md`, `AUDIT-REPORT-ELICITATION.md` — quality audit records
 - Setup script: `setup.sh` — project bootstrap
-- Sync script: `sync-framework.sh` — push framework updates to existing projects
+- Sync script: `sync-framework.sh` — push framework updates to existing projects; detects governance drift
 - Test project: `~/projects/linked-locket/` — evaluation target
