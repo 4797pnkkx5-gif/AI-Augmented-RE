@@ -148,11 +148,11 @@ fi
 
 # ── Artifact folders ──────────────────────────────────────────────────────────
 info "Creating artifact folders ..."
-for folder in artifacts/01-elicitation artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept; do
+for folder in artifacts/01-elicitation artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept artifacts/06-traceability; do
   mkdir -p "$folder"
   touch "$folder/.gitkeep"
 done
-success "Artifact folders ready (01 through 05)"
+success "Artifact folders ready (01 through 06)"
 
 # ── Obsidian vault integration ────────────────────────────────────────────────
 echo

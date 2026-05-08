@@ -127,9 +127,17 @@ ai-augmented-re/
 │   │   ├── epic-001.md
 │   │   ├── epic-002.md
 │   │   └── epic-003.md          — benchmark Epic set derived from PocketPing
-│   └── 03-user-stories/
-│       ├── index.md
-│       └── story-001..008.md    — benchmark Story set derived from those Epics
+│   ├── 03-user-stories/
+│   │   ├── index.md
+│   │   └── story-001..008.md    — benchmark Story set derived from those Epics
+│   ├── 04-srs/
+│   │   └── srs.md               — benchmark SRS compiled from elicit + epics + stories
+│   ├── 05-test-concept/
+│   │   ├── test-concept.md
+│   │   ├── test-case-001..014.md
+│   │   └── index.md             — benchmark Test Concept + 14 Test Cases derived from the SRS
+│   └── 06-traceability/
+│       └── traceability-matrix.md  — benchmark traceability matrix produced by /trace
 ├── docs/                        — framework documentation and specifications
 ├── inputs/                      — drop raw documents here
 │   └── README.md
@@ -138,5 +146,6 @@ ai-augmented-re/
     ├── 02-epics/
     ├── 03-user-stories/
     ├── 04-srs/
-    └── 05-test-concept/
+    ├── 05-test-concept/
+    └── 06-traceability/
 ```
