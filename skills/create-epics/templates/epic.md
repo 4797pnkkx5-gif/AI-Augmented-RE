@@ -65,7 +65,12 @@ approved-date: —
 
 ## 5. Candidate Requirements (Pending — informational)
 
-<!-- Pending FRs/NFRs linked to this Epic's Primary BUC(s). Listed for visibility; not yet In-Scope. They become In-Scope automatically on the next /create-epics run after the elicit doc accepts them. -->
+<!-- Pending FRs/NFRs linked to this Epic's Primary BUC(s). Listed for visibility; not yet In-Scope.
+     AUTO-PROMOTION RULE: A Candidate is automatically promoted to In-Scope (Section 4.1 / 4.2)
+     on the next /create-epics run after its Status changes to Accepted in the elicit doc.
+     The promotion respects this Epic's immutability rules — if this Epic is Accepted, only
+     a review note is appended in Section 12 and the human reviewer must explicitly re-open
+     the Epic to bring the Candidate into scope. -->
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
@@ -126,6 +131,14 @@ approved-date: —
        split-from: BUC-007 -->
 
 ## 12. Revision History
+
+<!-- AUTO-APPEND BEHAVIOUR: /create-epics appends one row to this table every time the Epic
+     is created or refined. For Pending Epics this is the running history of what the skill
+     has done. For Accepted Epics this is the only section the skill ever writes to — content
+     in Sections 1–11 is immutable; new information that could affect the Epic appears here as
+     a review note like:
+       Note 2026-05-08: re-run on /elicit update — human review of this Epic recommended.
+     The same rule applies to Rejected Epics. -->
 
 | Version | Date | Changed By | Changes |
 |---------|------|-----------|---------|

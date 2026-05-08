@@ -91,7 +91,10 @@ flowchart LR
 
 | OQ ID | Severity | Question | Affecting Epic | Status |
 |-------|----------|----------|----------------|--------|
-| OQ-### | Critical | <!-- Question --> | EP-### | Open |
+| OQ-### | Critical | <!-- Critical example: FR-007 is Accepted but not In-Scope of any Epic. Which Epic should cover it? --> | EP-### | Open |
+| OQ-### | High | <!-- High example: EP-001 was seeded by merging BUC-001 and BUC-002 (shared NFRs + same Primary Actor). Confirm the merger or instruct to keep separate. --> | EP-### | Open |
+| OQ-### | Medium | <!-- Medium example: BUC-005 has no Accepted requirements yet — Epic seed deferred until at least one FR or NFR is accepted in /elicit. --> | — | Open |
+| OQ-### | Low | <!-- Low example: EP-003 sized XL but has only 3 In-Scope FRs — verify the Effort heuristic with the team. --> | EP-### | Open |
 
 ---
 
