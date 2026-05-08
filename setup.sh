@@ -218,12 +218,24 @@ EOF
 
     success "Vault folder created: 10-Projects/$PROJECT_DISPLAY_NAME/"
 
-    # docs/ symlink
+    # docs/ symlink (project/docs → vault project folder)
     if [[ -L "docs" ]]; then
       warn "docs/ symlink already exists — skipping"
     else
       ln -s "$VAULT_PROJECT" docs
       success "docs/ symlink created → vault project folder"
+    fi
+
+    # Artifacts symlink in vault (vault/Artifacts → project/artifacts/)
+    # Makes all generated RE artifacts visible in Obsidian for documentation
+    VAULT_ARTIFACTS="$VAULT_PROJECT/Artifacts"
+    if [[ -L "$VAULT_ARTIFACTS" ]]; then
+      warn "Vault Artifacts symlink already exists — skipping"
+    elif [[ -d "$VAULT_ARTIFACTS" ]]; then
+      warn "$VAULT_ARTIFACTS already exists as a directory — skipping"
+    else
+      ln -s "$TARGET_DIR/artifacts" "$VAULT_ARTIFACTS"
+      success "Vault Artifacts symlink created → $TARGET_DIR/artifacts"
     fi
 
   else
