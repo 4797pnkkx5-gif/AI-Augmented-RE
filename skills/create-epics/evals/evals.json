@@ -1,0 +1,37 @@
+{
+  "skill_name": "create-epics",
+  "evals": [
+    {
+      "id": 1,
+      "name": "happy-path-pocketping",
+      "prompt": "We just APPROVED the elicitation document for PocketPing (the location-sharing app — 4 BUCs, 8 FRs, 3 NFRs, all Accepted). It's at input/artifacts/01-elicitation/elicitation-document.md. I need to decompose it into Epics following the AI-Augmented-RE framework conventions: one Epic file per Epic plus an index.md aggregator. Save everything to with_skill/outputs/ (e.g. with_skill/outputs/epic-001.md, with_skill/outputs/index.md). Watch out for cross-cutting NFRs that span multiple BUCs — they should appear in every Epic they affect.",
+      "expected_output": "Four Epic files (one per BUC: Share Location, View Contact Location, Manage Trusted Circle, Place Notifications) plus index.md. Cross-cutting NFRs (NFR-001 across BUC-001/002, NFR-002 across BUC-001/002/003) appear in multiple Epics with Cross-cutting=Yes. Every Accepted FR appears In-Scope of exactly one Epic. Coverage matrix in index.md shows no orphans.",
+      "files": ["input/artifacts/01-elicitation/elicitation-document.md"],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "gate-failure-draft",
+      "prompt": "Here's the elicitation document for PocketPing at input/artifacts/01-elicitation/elicitation-document.md. The team has been reviewing it and we think it's ready — go ahead and decompose it into Epics. Save to with_skill/outputs/.",
+      "expected_output": "The skill detects status: Draft in the frontmatter and HALTS at Step 0 with a clear message: 'Elicitation Document is not Approved (current status: Draft). Run /elicit and have the human approve before invoking /create-epics.' No Epic files are written. with_skill/outputs/ remains empty (or contains only an explanation file — the test is that no epic-NNN.md or index.md is generated).",
+      "files": ["input/artifacts/01-elicitation/elicitation-document.md"],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "merge-heuristic",
+      "prompt": "ChatChain is a tiny project — two BUCs (Send Encrypted Message, Receive Encrypted Message), 4 FRs, 2 NFRs that are both cross-cutting across both BUCs. Same Primary Actor for both BUCs. Elicit doc is APPROVED at input/artifacts/01-elicitation/elicitation-document.md. Decompose into Epics and save to with_skill/outputs/.",
+      "expected_output": "The skill detects high coupling (NFR-001 and NFR-002 both span BUC-001 and BUC-002, and Primary Actor is SH-001 for both) and proposes ONE merged Epic instead of two. The merged Epic's Source field carries 'merged-from: BUC-001, BUC-002'. An OQ Severity=High is raised asking the human to confirm or reject the merger. Result: 1 epic-NNN.md file + index.md, NOT two.",
+      "files": ["input/artifacts/01-elicitation/elicitation-document.md"],
+      "assertions": []
+    },
+    {
+      "id": 4,
+      "name": "split-heuristic",
+      "prompt": "AdminConsole has just one BUC (Operate Users and Audit) but it covers 9 Accepted FRs that fall into two clean themes: user CRUD (FR-001..FR-004) and audit log work (FR-005..FR-009). Elicit doc is APPROVED at input/artifacts/01-elicitation/elicitation-document.md. Decompose into Epics and save to with_skill/outputs/.",
+      "expected_output": "The skill detects > 7 In-Scope FRs in the seed Epic and proposes splitting into two Epics along the user-management vs audit-log sub-themes. Each resulting Epic carries 'split-from: BUC-001' in its Source field. An OQ Severity=High is raised asking the human to confirm or reject the split. Result: 2 epic-NNN.md files + index.md.",
+      "files": ["input/artifacts/01-elicitation/elicitation-document.md"],
+      "assertions": []
+    }
+  ]
+}

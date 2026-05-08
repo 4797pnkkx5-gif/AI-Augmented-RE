@@ -83,8 +83,15 @@ ai-augmented-re/
 │   │   ├── skill.md             — /elicit skill definition
 │   │   └── templates/
 │   │       └── elicitation-document.md
-│   └── arch-diagrams/
-│       └── skill.md             — /arch-diagrams skill definition
+│   ├── arch-diagrams/
+│   │   └── skill.md             — /arch-diagrams skill definition
+│   └── create-epics/
+│       ├── skill.md             — /create-epics skill definition
+│       ├── templates/
+│       │   ├── epic.md          — per-Epic file template
+│       │   └── index.md         — Epics aggregator/index template
+│       └── evals/
+│           └── evals.json       — skill-creator iteration-1 test prompts
 ├── examples/
 │   └── 01-elicitation/
 │       └── elicitation-document-example.md  — benchmark artifact (PocketPing)

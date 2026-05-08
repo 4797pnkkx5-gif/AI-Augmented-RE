@@ -13,3 +13,6 @@ docs
 # Editor
 .vscode/
 .idea/
+
+# Skill-creator eval workspaces (scratch — regenerated per iteration)
+skills/*-workspace/
