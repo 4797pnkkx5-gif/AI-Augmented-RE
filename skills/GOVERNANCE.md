@@ -1,6 +1,6 @@
 # AI-Augmented RE — Governance Rules
 
-Version: 1.4.0
+Version: 1.7.0
 Last updated: 2026-05-08
 
 This file is the **canonical source** for governance rules. It lives in `skills/` and is synced to every project by `sync-framework.sh`. When this file and `AGENTS.md` diverge, this file takes precedence.
@@ -205,3 +205,101 @@ APPROVED at the Story phase is invalid if any of the following is true:
 - The dependency graph between Pending Stories contains a cycle.
 
 The skill SHALL state every blocker explicitly in the review gate before presenting the APPROVED prompt.
+
+---
+
+## SRS-Phase Governance Rules
+
+These rules govern `/create-srs` (Phase 4 of the pipeline). They apply when the skill produces or updates `artifacts/04-srs/srs.md`.
+
+### Upstream gate (strict per Accepted Epic)
+
+`/create-srs` SHALL refuse to run when **any** of the following is true:
+
+- The directory `artifacts/02-epics/` does not exist or contains no `epic-*.md` files.
+- No Epic file has frontmatter `status: Accepted`.
+- Any Story whose `parent-epic` references an Accepted Epic has `status: Pending` or `status: Rejected`.
+- The upstream Elicitation Document does not have `status: Approved` in its frontmatter.
+
+The SRS is a **settled, formal artefact** — including a Pending Story would force re-publish on every Story Acceptance, defeating the purpose. Stories whose parent Epic is itself Pending or Rejected are not in scope; their FRs / ACs / Stakeholders are listed in Section 9 (Traceability Matrix) of the SRS as `Deferred` rather than blocking the gate.
+
+### Partial-by-Epic rule
+
+The SRS covers **exactly the Accepted Epic set** at run time. Stakeholders, BUCs, FRs, NFRs, and ACs whose parent Epic is currently Pending or Rejected MUST appear in the Traceability Matrix as `Deferred` with reason — not in Sections 3–8 (which list only the in-scope content). This lets large projects publish a settled specification for the work that is stable while later Epics are still being negotiated upstream.
+
+### Verbatim lift rule
+
+Sections 3–8 of the SRS (System Features, FRs, NFRs, CONs, External Interfaces, Acceptance Criteria) MUST be **lifted verbatim** from the upstream artefacts. The skill is a curator, not an author, for this content. Drift between the SRS and the elicit doc on lifted content is a structural defect — when `/create-tests` runs and detects such drift, it raises an OQ Severity=High asking the human to reconcile.
+
+### Three skill-generated sections
+
+Sections 1 (Introduction), 2 (Overall Description), and 9 (Traceability Matrix) are **synthesised by the skill from upstream sources**, not lifted verbatim. The skill MUST NOT invent content for these sections — when an Introduction component (e.g., a domain abbreviation in Section 1.3 Glossary) cannot be derived from upstream artefacts, the skill raises `OQ Severity=Medium` rather than fabricating a definition.
+
+### Re-run immutability rule
+
+An SRS with frontmatter `status: Accepted` is immutable. On re-run, the skill MUST NOT modify Sections 1–8. Section 9 (Traceability Matrix) MAY be refreshed, since it is informational and updates as Test Cases land. Section 10 (Revision History) MUST be appended with a review note recording the re-run.
+
+### SRS-phase APPROVED integrity
+
+APPROVED at the SRS phase is invalid if any of the following is true:
+
+- Any Open Question with Severity = Critical raised by `/create-srs` is Open.
+- Any Accepted FR / NFR / CON in scope is missing from the corresponding SRS section.
+- Any Accepted Story under an Accepted Epic is missing from Section 3 (System Features).
+- The Glossary in Section 1.3 omits a domain abbreviation that appears in upstream artefacts more than once.
+
+---
+
+## Test-Phase Governance Rules
+
+These rules govern `/create-tests` (Phase 5 of the pipeline). They apply when the skill produces or updates files under `artifacts/05-test-concept/`.
+
+### Upstream gate (strict on SRS)
+
+`/create-tests` SHALL refuse to run when `artifacts/04-srs/srs.md` does not have frontmatter `status: Accepted`. Tests are derived from a settled spec; running on a Pending SRS forces re-publishing the test set whenever the SRS shifts.
+
+### One-TC-per-AC rule
+
+Every AC in the SRS canonical list (Section 8) MUST appear as exactly one Test Case (`AC-FR-###-NN` → `TC-###`). Two TCs with the same `parent-ac` is a structural defect → `OQ Severity=Critical`. An AC with no TC is an orphan → `OQ Severity=Critical`.
+
+The skill MUST NOT invent additional test scenarios beyond what the AC states. Negative or boundary cases that the team wants must be added upstream as new ACs in `/elicit`, then propagated forward through `/create-srs` and back into `/create-tests`. This is a deliberate design choice: the framework's discipline is that ACs are the source of truth for what gets tested; the test phase mirrors them faithfully rather than adding to them.
+
+### AC drift cross-check rule
+
+The skill MUST cross-check every AC in SRS Section 8 against the same AC in elicit doc Section 6. Disagreements raise `OQ Severity=High` ("AC text differs between SRS and elicit doc"); the SRS is treated as authoritative for TC generation. The cross-check is the framework's first line of defence against silent corruption when an upstream artefact is edited after the SRS has been Approved.
+
+### Verbatim lift rule for ACs
+
+The TC's Preconditions, Steps, and Expected Result sections lift Given / When / Then text verbatim from the parent AC. NFR Measurable Targets are copied verbatim into Expected Result for NFR-derived ACs. The TC adds context (Test Type, Level, Test Data, Test Environment) but does not paraphrase or reword the AC's Then clause.
+
+### Type / Level heuristic rule
+
+Test Type and Level are auto-assigned by a deterministic heuristic — FR ACs → Functional / Acceptance; NFR ACs → Category-driven Type at System level. The heuristic is published in `skills/create-tests/skill.md` Step 5.4 and reproduced in each TC's Section 3. The team MAY override per-TC during sprint planning. Every TC MUST carry the note **"AI assignment — confirm with QA team."**
+
+### TC Owner rule
+
+Every Pending TC MUST have an Owner of the form `SH-###`, defaulting to the parent FR/NFR Stakeholder. A Pending TC with no Owner generates `OQ Severity=Critical` and blocks downstream APPROVED.
+
+### Re-run immutability rule
+
+Accepted TCs are immutable. On re-run, the skill MUST NOT modify Sections 1–12 of an Accepted TC. New information appears as a review note appended to Section 13 (Revision History). The same rule applies to Rejected TCs — the TC-### is permanently retired but the file persists for audit.
+
+### Test-phase APPROVED integrity
+
+APPROVED at the Test phase is invalid if any of the following is true:
+
+- Any Open Question with Severity = Critical raised by `/create-tests` is Open.
+- Any Pending TC has no Owner.
+- Any Pending TC has empty Preconditions, Steps, or Expected Result.
+- Any AC in the SRS canonical list is orphaned (no TC) or duplicated (more than one TC).
+- The Test Concept itself is in `status: Pending` (it must be Accepted by the QA lead before the TC set is finalised).
+
+---
+
+## Trace-Phase (read-only auditor — no governance gate)
+
+`/trace` (Phase 6 of the pipeline) is **diagnostic, not generative**. It walks every artefact and produces `artifacts/06-traceability/traceability-matrix.md` reporting orphans, coverage stats, cross-artefact drift, and impact analysis. Because the skill mints no IDs, never modifies upstream artefacts, and produces a snapshot rather than a settled artefact, it has no governance gate and no acceptance lifecycle of its own.
+
+The matrix's Section 5 (Orphan Reports), Section 6 (Drift Detection), and Section 7 (Impact Analysis) are governance-adjacent — the human reviewer reads them to find structural defects elsewhere in the pipeline. The findings are **reported in the matrix itself**, not raised as new OQ-### entries — the OQ namespace is reserved for skills that generate content. `/trace` lists existing OQs from upstream artefacts but adds no new ones.
+
+The trace artefact does not have an `Accepted` status. Re-runs always overwrite from current upstream state. Manual edits to `artifacts/06-traceability/traceability-matrix.md` are not preserved across runs.
