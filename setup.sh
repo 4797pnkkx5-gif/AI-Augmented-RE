@@ -296,9 +296,15 @@ echo
 echo "  5. Continue with /create-epics — decomposes the Approved elicit doc"
 echo "     into Epics in artifacts/02-epics/ (one file per Epic + index.md)"
 echo
+echo "  6. Continue with /create-stories — decomposes Accepted Epics into User"
+echo "     Stories in artifacts/03-user-stories/ (one file per Story + index.md)."
+echo "     The skill is incremental: it runs as soon as at least one Epic is"
+echo "     Accepted; deferred Stories show up in index.md Section 5."
+echo
 echo -e "${BOLD}Calibration examples (benchmark artefacts to compare against):${RESET}"
 echo "  examples/01-elicitation/elicitation-document-example.md  — fully Accepted PocketPing"
 echo "  examples/02-epics/                                       — Pending Epics derived from it"
+echo "  examples/03-user-stories/                                — Pending Stories derived from those Epics"
 echo
 if [[ "$STANDALONE" == true ]]; then
   echo -e "${BOLD}Project location:${RESET} $TARGET_DIR"
