@@ -1,0 +1,29 @@
+{
+  "skill_name": "create-srs",
+  "evals": [
+    {
+      "id": 1,
+      "name": "happy-path-pocketping",
+      "prompt": "All three PocketPing Epics are Accepted and every Story under them is Accepted. Compile the SRS — IEEE 29148 structure with Introduction, Overall Description, System Features (per Epic), FRs/NFRs/CONs verbatim, External Interfaces from inputs/APIs/, ACs verbatim, and a comprehensive Traceability Matrix. There's an OpenAPI YAML for the location service in inputs/APIs/.",
+      "expected_output": "Single artifacts/04-srs/srs.md with all 9 sections + Revision History. Section 1 has skill-generated Introduction. Section 2 has skill-generated Overall Description. Section 3 lists 3 Epics with their 8 Stories. Sections 4–6 lift FRs/NFRs/CONs verbatim. Section 7 lists the location service from the API YAML. Section 8 lists ACs. Section 9 has the traceability matrix. No Critical OQs. Coverage stats show 8 FRs / 4 NFRs / 3 CONs / 8 Stories in scope, 0 deferred.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "gate-failure-pending-stories",
+      "prompt": "All three PocketPing Epics are Accepted, but story-005 (Invite Contact to Trusted Circle) is still Pending — the Privacy Officer hasn't signed off yet. Compile the SRS.",
+      "expected_output": "The skill detects that story-005 is Pending under Accepted Epic EP-002 and HALTS at Step 0 with a clear message naming US-005 and instructing the user to have the Product Owner accept (or reject) the listed Stories in /create-stories before re-running. No artifacts/04-srs/srs.md is written.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "deferred-epic-partial-srs",
+      "prompt": "Only EP-001 (Real-Time Location Sharing & Viewing) is Accepted with all 4 of its Stories Accepted. EP-002 and EP-003 are still Pending. Compile a partial SRS for what is settled.",
+      "expected_output": "The skill produces artifacts/04-srs/srs.md covering exactly EP-001 with US-001..US-004 and FR-001..FR-004. Section 1.2 (Scope) names EP-001 as the Epic in scope. Section 9 (Traceability Matrix) lists FR-005..FR-008 and EP-002, EP-003 as Deferred with reason 'Parent Epic not yet Accepted'. Coverage stats show 4 FRs in scope, 4 deferred. The skill does NOT halt — partial-by-Epic is by design.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

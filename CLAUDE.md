@@ -92,21 +92,30 @@ ai-augmented-re/
 │   │   │   └── index.md         — Epics aggregator/index template
 │   │   └── evals/
 │   │       └── evals.json       — skill-creator iteration-1 test prompts
-│   └── create-stories/
-│       ├── skill.md             — /create-stories skill definition
+│   ├── create-stories/
+│   │   ├── skill.md             — /create-stories skill definition
+│   │   ├── templates/
+│   │   │   ├── story.md         — per-Story file template
+│   │   │   └── index.md         — Stories aggregator/index template
+│   │   └── evals/
+│   │       └── evals.json       — skill-creator iteration-1 test prompts
+│   └── create-srs/
+│       ├── skill.md             — /create-srs skill definition
 │       ├── templates/
-│       │   ├── story.md         — per-Story file template
-│       │   └── index.md         — Stories aggregator/index template
+│       │   └── srs.md           — Software Requirements Specification template
 │       └── evals/
 │           └── evals.json       — skill-creator iteration-1 test prompts
 ├── examples/
 │   ├── 01-elicitation/
 │   │   └── elicitation-document-example.md  — benchmark artifact (PocketPing elicit doc)
-│   └── 02-epics/
+│   ├── 02-epics/
+│   │   ├── index.md
+│   │   ├── epic-001.md
+│   │   ├── epic-002.md
+│   │   └── epic-003.md          — benchmark Epic set derived from PocketPing
+│   └── 03-user-stories/
 │       ├── index.md
-│       ├── epic-001.md
-│       ├── epic-002.md
-│       └── epic-003.md          — benchmark Epic set derived from PocketPing
+│       └── story-001..008.md    — benchmark Story set derived from those Epics
 ├── docs/                        — framework documentation and specifications
 ├── inputs/                      — drop raw documents here
 │   └── README.md
