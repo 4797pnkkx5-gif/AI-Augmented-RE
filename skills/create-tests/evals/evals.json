@@ -1,0 +1,29 @@
+{
+  "skill_name": "create-tests",
+  "evals": [
+    {
+      "id": 1,
+      "name": "happy-path-pocketping-srs-accepted",
+      "prompt": "The PocketPing SRS has just been Accepted. Derive the Test Concept and one Test Case per AC in Section 8 of the SRS. Auto-assign Test Type and Level. Save outputs to outputs/.",
+      "expected_output": "test-concept.md (strategy) plus one test-case-NNN.md per AC in the SRS (PocketPing has 14 ACs: 8 FR ACs across FR-001..FR-008, 4 NFR ACs for NFR-001..NFR-004; some FRs have two ACs). index.md aggregates with Test Map, AC Coverage Matrix, Type/Level Distribution. FR ACs typed Functional/Acceptance; NFR ACs typed per Category at System level.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "gate-failure-srs-pending",
+      "prompt": "We need to prepare the Test Concept and Test Cases for PocketPing. Compile them from the current SRS.",
+      "expected_output": "The skill detects that artifacts/04-srs/srs.md has status: Pending (not Accepted) and HALTS at Step 0 with a clear message naming the current status and instructing the user to have the SRS Accepted before running create-tests. No test-case files written.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "ac-drift-detection",
+      "prompt": "Compile Test Cases from the Accepted PocketPing SRS. Note: someone may have edited the elicit doc after the SRS was Approved — flag any drift.",
+      "expected_output": "The skill produces TCs for all 14 ACs (using SRS text, which is the canonical source). For AC-FR-001-01, the skill detects that the SRS says 'Within 5 seconds' but the elicit doc says 'Within 3 seconds' and raises an OQ Severity=High asking the user to reconcile. The TC for AC-FR-001-01 uses the SRS wording (5 seconds).",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

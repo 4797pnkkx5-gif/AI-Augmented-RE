@@ -99,10 +99,18 @@ ai-augmented-re/
 │   │   │   └── index.md         — Stories aggregator/index template
 │   │   └── evals/
 │   │       └── evals.json       — skill-creator iteration-1 test prompts
-│   └── create-srs/
-│       ├── skill.md             — /create-srs skill definition
+│   ├── create-srs/
+│   │   ├── skill.md             — /create-srs skill definition
+│   │   ├── templates/
+│   │   │   └── srs.md           — Software Requirements Specification template
+│   │   └── evals/
+│   │       └── evals.json       — skill-creator iteration-1 test prompts
+│   └── create-tests/
+│       ├── skill.md             — /create-tests skill definition
 │       ├── templates/
-│       │   └── srs.md           — Software Requirements Specification template
+│       │   ├── test-concept.md  — Test Concept (strategy) template
+│       │   ├── test-case.md     — per-Test-Case template
+│       │   └── index.md         — Tests aggregator/index template
 │       └── evals/
 │           └── evals.json       — skill-creator iteration-1 test prompts
 ├── examples/
