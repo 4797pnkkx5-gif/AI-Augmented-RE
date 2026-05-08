@@ -85,16 +85,28 @@ ai-augmented-re/
 │   │       └── elicitation-document.md
 │   ├── arch-diagrams/
 │   │   └── skill.md             — /arch-diagrams skill definition
-│   └── create-epics/
-│       ├── skill.md             — /create-epics skill definition
+│   ├── create-epics/
+│   │   ├── skill.md             — /create-epics skill definition
+│   │   ├── templates/
+│   │   │   ├── epic.md          — per-Epic file template
+│   │   │   └── index.md         — Epics aggregator/index template
+│   │   └── evals/
+│   │       └── evals.json       — skill-creator iteration-1 test prompts
+│   └── create-stories/
+│       ├── skill.md             — /create-stories skill definition
 │       ├── templates/
-│       │   ├── epic.md          — per-Epic file template
-│       │   └── index.md         — Epics aggregator/index template
+│       │   ├── story.md         — per-Story file template
+│       │   └── index.md         — Stories aggregator/index template
 │       └── evals/
 │           └── evals.json       — skill-creator iteration-1 test prompts
 ├── examples/
-│   └── 01-elicitation/
-│       └── elicitation-document-example.md  — benchmark artifact (PocketPing)
+│   ├── 01-elicitation/
+│   │   └── elicitation-document-example.md  — benchmark artifact (PocketPing elicit doc)
+│   └── 02-epics/
+│       ├── index.md
+│       ├── epic-001.md
+│       ├── epic-002.md
+│       └── epic-003.md          — benchmark Epic set derived from PocketPing
 ├── docs/                        — framework documentation and specifications
 ├── inputs/                      — drop raw documents here
 │   └── README.md

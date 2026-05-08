@@ -1,0 +1,29 @@
+{
+  "skill_name": "create-stories",
+  "evals": [
+    {
+      "id": 1,
+      "name": "happy-path-pocketping",
+      "prompt": "All three Epics for PocketPing have just been Accepted by the Product Owner. Decompose them into User Stories: one Story per Accepted FR, parent Epic and parent FR recorded, ACs lifted verbatim from the elicit doc, AI-provisional Story Points. Save outputs to outputs/.",
+      "expected_output": "Eight Story files (one per Accepted FR: FR-001..FR-008). EP-001 owns 4 Stories, EP-002 owns 2, EP-003 owns 2. Each Story carries Connextra narrative, AC IDs from elicit Section 6, Story Points 1-13 with rationale, parent EP+FR traceability, and an Owner SH-###. index.md aggregates all 8 with FR coverage matrix showing every eligible FR Covered.",
+      "files": ["input/artifacts/01-elicitation/elicitation-document.md", "input/artifacts/02-epics/epic-001.md", "input/artifacts/02-epics/epic-002.md", "input/artifacts/02-epics/epic-003.md", "input/artifacts/02-epics/index.md"],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "gate-failure-no-accepted-epics",
+      "prompt": "All three PocketPing Epics are still Pending — the Product Owner has not yet accepted any of them. Decompose them into User Stories.",
+      "expected_output": "The skill detects no Accepted Epics in artifacts/02-epics/ and HALTS at Step 0 with a clear message: 'No Accepted Epics yet. Have the human reviewer accept at least one Epic in /create-epics (set its frontmatter status: Accepted) before invoking /create-stories.' No Story files are written. outputs/ remains empty (or contains only an explanation file — the test is that no story-NNN.md or index.md is generated).",
+      "files": ["input/artifacts/01-elicitation/elicitation-document.md", "input/artifacts/02-epics/epic-001.md", "input/artifacts/02-epics/epic-002.md", "input/artifacts/02-epics/epic-003.md", "input/artifacts/02-epics/index.md"],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "incremental-adoption",
+      "prompt": "Only EP-002 (Manage Trusted Circle) has been Accepted so far — EP-001 and EP-003 are still Pending. Decompose what is ready into User Stories; the rest will follow on a later run.",
+      "expected_output": "The skill mints exactly TWO Stories — one per Accepted FR linked to EP-002 (FR-005 Invite Contact, FR-006 Revoke Contact). Stories from EP-001 and EP-003 are NOT minted; their FRs are listed in index.md Section 5 (Stories Deferred) with reason 'Parent Epic not Accepted yet'. The skill does not error or stop — incremental adoption is by design.",
+      "files": ["input/artifacts/01-elicitation/elicitation-document.md", "input/artifacts/02-epics/epic-001.md", "input/artifacts/02-epics/epic-002.md", "input/artifacts/02-epics/epic-003.md", "input/artifacts/02-epics/index.md"],
+      "assertions": []
+    }
+  ]
+}
