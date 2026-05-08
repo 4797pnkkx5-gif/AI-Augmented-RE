@@ -2,6 +2,8 @@
 
 This folder holds all raw source documents for the elicitation phase. Drop any document here and run `/elicit` — the skill reads everything in this folder and produces (or updates) the Elicitation Document in `artifacts/01-elicitation/`.
 
+> **Dual access (Obsidian projects):** if this project was scaffolded with Obsidian integration, this folder is also reachable from the vault at `10-Projects/<Project Name>/Inputs/`. The two paths are the same files — drop documents from either side.
+
 ## Supported Formats
 
 | Format | Extension | Notes |

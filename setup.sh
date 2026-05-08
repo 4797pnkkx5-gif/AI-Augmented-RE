@@ -44,22 +44,25 @@ fi
 
 echo
 
-# ── Standalone: copy framework files into new directory ──────────────────────
+# ── Standalone: scaffold a new project that references the framework ────────
 if [[ "$STANDALONE" == true ]]; then
   if [[ -e "$TARGET_DIR" ]]; then
     error "Target directory already exists: $TARGET_DIR\nChoose a path that does not exist yet."
   fi
 
-  info "Copying framework files to $TARGET_DIR ..."
+  info "Creating project at $TARGET_DIR ..."
   mkdir -p "$TARGET_DIR"
-
-  rsync -a --exclude='.git' --exclude='.DS_Store' --exclude='docs' \
-    "$SCRIPT_DIR/" "$TARGET_DIR/"
-
-  # Replace CLAUDE.md with the project template
-  cp "$SCRIPT_DIR/setup/CLAUDE.md.template" "$TARGET_DIR/CLAUDE.md"
-
   cd "$TARGET_DIR"
+
+  # Project-local CLAUDE.md from framework template
+  cp "$SCRIPT_DIR/setup/CLAUDE.md.template" CLAUDE.md
+
+  # Skills are referenced from the framework, not copied
+  ln -s "$SCRIPT_DIR/skills" skills
+
+  # Inputs folder + the README that explains how to feed /elicit
+  mkdir -p inputs
+  cp "$SCRIPT_DIR/inputs/README.md" inputs/README.md
 
   info "Initialising git repository ..."
   git init -q
@@ -102,7 +105,7 @@ success "CLAUDE.md configured"
 
 # ── AGENTS.md ─────────────────────────────────────────────────────────────────
 info "Creating AGENTS.md ..."
-cp setup/AGENTS.md.template AGENTS.md
+cp "$SCRIPT_DIR/setup/AGENTS.md.template" AGENTS.md
 sed -i '' "s/<!-- PROJECT_NAME -->/$PROJECT_DISPLAY_NAME/g" AGENTS.md
 success "AGENTS.md created"
 
@@ -134,7 +137,7 @@ fi
 
 # ── Artifact folders ──────────────────────────────────────────────────────────
 info "Creating artifact folders ..."
-for folder in artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept; do
+for folder in artifacts/01-elicitation artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept; do
   mkdir -p "$folder"
   touch "$folder/.gitkeep"
 done
@@ -189,6 +192,8 @@ WHERE !completed
 ## Key Paths
 
 - **Repo:** \`~/projects/$PROJECT_SLUG/\`
+- **Inputs:** \`Inputs/\` — raw stakeholder documents (symlink to repo \`inputs/\`)
+- **Artifacts:** \`Artifacts/\` — generated RE artifacts (symlink to repo \`artifacts/\`)
 
 ## Links
 
@@ -236,6 +241,18 @@ EOF
     else
       ln -s "$TARGET_DIR/artifacts" "$VAULT_ARTIFACTS"
       success "Vault Artifacts symlink created → $TARGET_DIR/artifacts"
+    fi
+
+    # Inputs symlink in vault (vault/Inputs → project/inputs/)
+    # Lets raw stakeholder docs be edited from Obsidian and the project filesystem interchangeably.
+    VAULT_INPUTS="$VAULT_PROJECT/Inputs"
+    if [[ -L "$VAULT_INPUTS" ]]; then
+      warn "Vault Inputs symlink already exists — skipping"
+    elif [[ -d "$VAULT_INPUTS" ]]; then
+      warn "$VAULT_INPUTS already exists as a directory — skipping"
+    else
+      ln -s "$TARGET_DIR/inputs" "$VAULT_INPUTS"
+      success "Vault Inputs symlink created → $TARGET_DIR/inputs"
     fi
 
   else

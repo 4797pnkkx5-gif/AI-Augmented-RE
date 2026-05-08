@@ -34,7 +34,7 @@ Run `/elicit` again after adding new documents. The skill detects new inputs aut
 ## Key Paths
 
 - **Project:** `~/projects/<!-- PROJECT_SLUG -->/`
-- **Inputs:** `inputs/` — raw stakeholder documents
+- **Inputs:** `inputs/` — raw stakeholder documents (version-controlled); also accessible from Obsidian via `10-Projects/<!-- PROJECT_NAME -->/Inputs/`
 - **Artifacts:** `artifacts/` — generated RE artifacts (version-controlled); also accessible from Obsidian via `10-Projects/<!-- PROJECT_NAME -->/Artifacts/`
 - **Vault docs:** `docs/` → `10-Projects/<!-- PROJECT_NAME -->/` (symlink; if Obsidian integration was enabled at setup)
 - **Skills:** `skills/` — phase-specific skill definitions

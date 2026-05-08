@@ -47,7 +47,7 @@ Current skill: —
 
 ## Key Paths
 
-- Inputs: `inputs/` — drop raw stakeholder documents here
+- Inputs: `inputs/` — drop raw stakeholder documents here (also visible in Obsidian: `10-Projects/<!-- PROJECT_NAME -->/Inputs/`)
 - Artifacts: `artifacts/` — generated RE artifacts
 - Skills: `skills/` — skill definitions (read these to understand each phase)
 
