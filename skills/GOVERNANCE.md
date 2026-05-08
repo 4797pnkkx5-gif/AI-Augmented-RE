@@ -1,6 +1,6 @@
 # AI-Augmented RE — Governance Rules
 
-Version: 1.3.0
+Version: 1.4.0
 Last updated: 2026-05-08
 
 This file is the **canonical source** for governance rules. It lives in `skills/` and is synced to every project by `sync-framework.sh`. When this file and `AGENTS.md` diverge, this file takes precedence.
@@ -125,5 +125,83 @@ APPROVED at the Epic phase is invalid if any of the following is true:
 - Any Accepted FR is orphaned (not In-Scope of any Epic) or duplicated (In-Scope of more than one Epic).
 - Any Accepted NFR is orphaned (not In-Scope of any Epic).
 - The dependency graph between Pending Epics contains a cycle.
+
+The skill SHALL state every blocker explicitly in the review gate before presenting the APPROVED prompt.
+
+---
+
+## Story-Phase Governance Rules
+
+These rules govern `/create-stories` (Phase 3 of the pipeline). They apply when the skill produces or updates files under `artifacts/03-user-stories/`. As with the Epic phase, all rules below are enforced by the skill itself; this section is the canonical statement so projects, reviewers, and downstream skills can rely on the same contract.
+
+### Upstream gate (incremental)
+
+`/create-stories` SHALL refuse to run when **all** of the following are true:
+
+- The directory `artifacts/02-epics/` exists, AND
+- The directory contains at least one `epic-*.md` file, AND
+- **No** `epic-*.md` file has frontmatter `status: Accepted`.
+
+The gate is **incremental** — the skill runs as soon as at least one Epic is Accepted, and operates only on the Accepted Epic set. Pending and Rejected Epics are skipped this run; their Stories are minted on a future re-run after the human Accepts the Epic. This lets large projects land Story work for one Epic while other Epics are still being negotiated upstream, and matches the design rationale recorded in [[04-Create-Epics-Iteration-1-Lessons]] §4 — gating on every Epic at once would force unnecessary serialisation.
+
+The skill SHALL also defensively check that the upstream Elicitation Document still has `status: Approved`. An Accepted Epic should not exist if the elicit doc was un-Approved, but the check protects against manual edits between runs.
+
+### FR-to-Story mapping rule
+
+Every Accepted FR linked to an Accepted Epic MUST appear in exactly one Story. The mapping is one-to-one:
+
+- Two Stories sharing the same `parent-fr: FR-###` is a structural defect → `OQ Severity=Critical`.
+- An Accepted FR linked to an Accepted Epic without a Story is an orphan → `OQ Severity=Critical`.
+- A Pending or Rejected FR generates no Story. A Pending FR linked to an Accepted Epic is listed in the Epic's Candidate Requirements section (per Epic-Phase rules), not in Story form.
+
+### AC inheritance rule
+
+Each Story's Acceptance Criteria SHALL be **lifted verbatim** from the Elicitation Document Section 6 — same AC IDs (`AC-FR-###-NN`), same Given/When/Then text or Criterion field, same acceptance fields (`Status`, `Accepted By`, `Accepted Date`). The Story does **not** mint new ACs and does not re-set existing ACs to `Pending` if they were already Accepted upstream.
+
+ACs and Stories carry **separate** acceptance lifecycles. An AC's Status reflects the elicit doc; the Story's Status reflects whether the human Product Owner has approved this Story for sprint planning. The two are not synchronised by the skill.
+
+A Story whose parent FR has zero ACs in elicit Section 6 is undeliverable → `OQ Severity=Critical: "FR-### has no Acceptance Criteria. Story US-### cannot be implemented without a testable definition of done."`
+
+### Story Owner rule
+
+Every Pending Story MUST have an Owner of the form `SH-###`, defaulting to the parent FR's `Stakeholder` field. A Pending Story with no Owner generates `OQ Severity=Critical` and blocks downstream APPROVED.
+
+### Dependency rule
+
+`Depends on` and `Blocks` edges between Stories SHALL be populated only when the Elicitation Document or the parent Epic states a dependency explicitly:
+
+- Parent FR's `Rationale` references another FR's outcome.
+- Parent BUC's `Trigger` names another BUC's Expected Outcome.
+- Parent Epic's `Dependencies` section lists an EP-level dependency that propagates to each Story it contains.
+
+The skill SHALL NOT invent dependencies. Cycles between Pending Stories are detected by a topological sort and generate `OQ Severity=Critical`.
+
+### Re-run immutability rule
+
+Accepted and Rejected Stories are immutable. On re-run, the skill MUST NOT modify any field of a Story with `Status = Accepted` or `Status = Rejected`. New information that could affect the Story appears as a review note appended to Section 12 (Revision History): `Note [YYYY-MM-DD]: re-run on /elicit or /create-epics update — human review of this Story recommended.` The same rule applies to Stories whose parent FR has been deleted, renamed, or restructured upstream — the skill never silently destabilises approved Story content.
+
+### OQ namespace continuity rule
+
+The `OQ-###` namespace is shared across the Elicitation Document, every Epic file, and every Story file. New OQs created by `/create-stories` continue numbering from the highest existing OQ-### across all three artefacts. OQ IDs are never reused, even after resolution or deletion. The `index.md` aggregator in `artifacts/03-user-stories/` carries every Open OQ from every Story file, sorted by Severity (Critical → High → Medium → Low).
+
+### Story Points provisional rule
+
+Every Pending Story carries a Fibonacci-band Story Points estimate (1 / 2 / 3 / 5 / 8 / 13) derived from a heuristic over Acceptance Criterion count and the parent Epic's NFR / CON exposure. The estimate is **AI-provisional** and MUST carry the note `**AI estimate — confirm with team.**` Sizing is not derivable from upstream artefacts; it depends on team velocity, technology familiarity, and risk appetite — none of which the framework sees. The estimate is a planning-meeting starting point, not an authoritative commitment.
+
+A Pending Story sized at 13 points triggers `OQ Severity=High` asking the human to consider splitting along ACs that test independent observable outcomes.
+
+### Narrative quality rule
+
+Each Pending Story SHALL carry a non-placeholder Connextra narrative — `As a <role>, I want <action>, so that <outcome>` — composed from the parent FR's `Stakeholder` (role), `Description` (action), and parent BUC's `Expected Outcome` (outcome). When any component cannot be derived cleanly from upstream sources, the skill writes a best-effort phrasing AND generates `OQ Severity=Medium` requesting human refinement. The skill SHALL NOT leave the narrative empty or filled with template placeholder text.
+
+### Story-phase APPROVED integrity
+
+APPROVED at the Story phase is invalid if any of the following is true:
+
+- Any Open Question with Severity = Critical (raised by `/create-stories`) has Status = Open.
+- Any Pending Story has no Owner.
+- Any Pending Story has zero Acceptance Criteria.
+- Any Accepted FR linked to an Accepted Epic is orphaned (no Story) or duplicated (more than one Story).
+- The dependency graph between Pending Stories contains a cycle.
 
 The skill SHALL state every blocker explicitly in the review gate before presenting the APPROVED prompt.
