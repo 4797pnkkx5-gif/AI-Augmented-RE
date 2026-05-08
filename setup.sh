@@ -60,8 +60,13 @@ if [[ "$STANDALONE" == true ]]; then
   # Skills are referenced from the framework, not copied
   ln -s "$SCRIPT_DIR/skills" skills
 
+  # Calibration examples are referenced from the framework, not copied —
+  # gives newcomers a benchmark Epic / elicitation set to compare their output against
+  ln -s "$SCRIPT_DIR/examples" examples
+
   # Inputs folder + the README that explains how to feed /elicit
-  mkdir -p inputs
+  # APIs/ subfolder is pre-created because inputs/README.md and the /elicit skill expect it
+  mkdir -p inputs/APIs
   cp "$SCRIPT_DIR/inputs/README.md" inputs/README.md
 
   info "Initialising git repository ..."
@@ -122,6 +127,9 @@ if [[ ! -f ".gitignore" ]]; then
 # Obsidian vault symlink — machine-specific, recreated by setup.sh
 docs
 
+# Claude Code local settings
+.claude/
+
 # macOS
 .DS_Store
 
@@ -131,6 +139,9 @@ docs
 # Editor
 .vscode/
 .idea/
+
+# Skill-creator eval workspaces (scratch — regenerated per iteration)
+skills/*-workspace/
 EOF
   success ".gitignore created"
 fi
@@ -271,7 +282,7 @@ echo -e "${BOLD}═════════════════════�
 echo
 echo -e "${BOLD}Next steps:${RESET}"
 echo "  1. Drop your input documents into inputs/"
-echo "     (meeting notes, specs, briefs — any format)"
+echo "     (meeting notes, specs, briefs — any format; OpenAPI YAMLs go in inputs/APIs/)"
 echo
 echo "  2. Start the elicitation phase:"
 echo "     Claude Code:      /elicit"
@@ -279,7 +290,15 @@ echo "     GitHub Copilot:   \"Run the elicit skill\""
 echo
 echo "  3. Review the Elicitation Document and type APPROVED"
 echo
-echo "  4. Continue with /create-epics"
+echo "  4. (Optional) Run /arch-diagrams to refresh Component + Sequence diagrams"
+echo "     in Section 4 of the Elicitation Document."
+echo
+echo "  5. Continue with /create-epics — decomposes the Approved elicit doc"
+echo "     into Epics in artifacts/02-epics/ (one file per Epic + index.md)"
+echo
+echo -e "${BOLD}Calibration examples (benchmark artefacts to compare against):${RESET}"
+echo "  examples/01-elicitation/elicitation-document-example.md  — fully Accepted PocketPing"
+echo "  examples/02-epics/                                       — Pending Epics derived from it"
 echo
 if [[ "$STANDALONE" == true ]]; then
   echo -e "${BOLD}Project location:${RESET} $TARGET_DIR"
