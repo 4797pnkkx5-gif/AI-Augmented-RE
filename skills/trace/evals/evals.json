@@ -1,0 +1,29 @@
+{
+  "skill_name": "trace",
+  "evals": [
+    {
+      "id": 1,
+      "name": "full-pipeline",
+      "prompt": "Generate the project-wide traceability matrix. All five pipeline phases have artefacts (elicit Approved, 3 Epics Accepted, 8 Stories Accepted, SRS Accepted, 14 TCs Pending). Save to artifacts/06-traceability/traceability-matrix.md.",
+      "expected_output": "Single traceability-matrix.md with all 9 sections. Forward and backward matrices each have ~14 leaf paths covering SH→BUC→FR/NFR→EP→US→AC→TC. Coverage stats show 100% for each Accepted level. Zero Critical orphans. No drift detected. Impact analysis shows no Pending/Rejected upstream elements with downstream dependants (every upstream is Accepted).",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "partial-pipeline",
+      "prompt": "Generate the traceability matrix. Only the elicit doc (Approved) and Epics (3 Accepted) are present — Stories, SRS, and Test Cases haven't been generated yet.",
+      "expected_output": "Single traceability-matrix.md. Pipeline state section notes 'Stories: absent', 'SRS: absent', 'Tests: absent'. Forward matrix shows rows ending at Epic with `—` for Story/AC/TC columns. Coverage stats show 0% for Story-and-below levels. Skill does NOT raise orphan errors for missing Stories/SRS/Tests — those phases haven't run yet, so absence is expected, not a defect.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "drift-detection",
+      "prompt": "Generate the traceability matrix. The pipeline is complete but I think someone may have edited the elicit doc after the SRS was Approved — please flag any drift.",
+      "expected_output": "Single traceability-matrix.md. Section 6 (Cross-Artefact Drift Detection) reports AC-FR-001-01 disagreement: elicit doc says 'Within 3 seconds', SRS says 'Within 5 seconds'. Other sections complete normally. The drift is reported as High-severity and named in the review summary.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

@@ -105,12 +105,18 @@ ai-augmented-re/
 │   │   │   └── srs.md           — Software Requirements Specification template
 │   │   └── evals/
 │   │       └── evals.json       — skill-creator iteration-1 test prompts
-│   └── create-tests/
-│       ├── skill.md             — /create-tests skill definition
+│   ├── create-tests/
+│   │   ├── skill.md             — /create-tests skill definition
+│   │   ├── templates/
+│   │   │   ├── test-concept.md  — Test Concept (strategy) template
+│   │   │   ├── test-case.md     — per-Test-Case template
+│   │   │   └── index.md         — Tests aggregator/index template
+│   │   └── evals/
+│   │       └── evals.json       — skill-creator iteration-1 test prompts
+│   └── trace/
+│       ├── skill.md             — /trace skill definition (pipeline auditor)
 │       ├── templates/
-│       │   ├── test-concept.md  — Test Concept (strategy) template
-│       │   ├── test-case.md     — per-Test-Case template
-│       │   └── index.md         — Tests aggregator/index template
+│       │   └── traceability-matrix.md  — Traceability Matrix template
 │       └── evals/
 │           └── evals.json       — skill-creator iteration-1 test prompts
 ├── examples/
