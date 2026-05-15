@@ -36,8 +36,8 @@ When working in this repository, you are maintaining the framework itself (not r
 ## RE Pipeline
 
 ```
-Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test Cases
-               ↑ review gate        ↑ gate   ↑ gate       ↑ gate   ↑ gate
+Raw Inputs → Elicitation → Epics → Stories → SRS → Tests → Traceability → Implementation Tasks
+               ↑ gate      ↑ gate  ↑ gate    ↑ gate ↑ gate   (audit)         ↑ gate
 ```
 
 | Phase | Skill | Artifact |
@@ -49,6 +49,7 @@ Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test 
 | 4 | `/create-srs` | Software Requirements Specification |
 | 5 | `/create-tests` | Test Concept + Test Cases |
 | 6 | `/trace` | Traceability Matrix |
+| 7 | `/create-tasks` | Implementation Tasks (Dev-Team handoff) |
 
 ## Key Paths
 
@@ -60,3 +61,4 @@ Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test 
 - Setup script: `setup.sh` — project bootstrap
 - Sync script: `sync-framework.sh` — push framework updates to existing projects; detects governance drift
 - Test project: `~/projects/linked-locket/` — evaluation target
+- Phase 7 (`/create-tasks`) consumes the Accepted Story set + Accepted SRS and produces codebase-agnostic implementation Tasks at `artifacts/07-implementation-tasks/` — the final RE handoff artefact for the Dev-Team's AI coding agent

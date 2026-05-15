@@ -11,11 +11,11 @@ See `AGENTS.md` for shared context that both Claude Code and GitHub Copilot read
 ## RE Pipeline
 
 ```
-Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test Cases
-               ↑ review gate        ↑ gate   ↑ gate       ↑ gate   ↑ gate
+Raw Inputs → Elicitation → Epics → Stories → SRS → Tests → Traceability → Implementation Tasks
+               ↑ gate      ↑ gate  ↑ gate    ↑ gate ↑ gate   (audit)         ↑ gate
 ```
 
-Each artifact requires explicit human approval before the next is generated.
+Each generative artifact requires explicit human approval before the next is generated. `/trace` is a read-only auditor and has no gate.
 
 ## Skills
 
@@ -28,6 +28,7 @@ Each artifact requires explicit human approval before the next is generated.
 | 4 | `/create-srs` | Software Requirements Specification |
 | 5 | `/create-tests` | Test Concept + Test Cases |
 | 6 | `/trace` | Traceability Matrix |
+| 7 | `/create-tasks` | Implementation Tasks (Dev-Team handoff) |
 
 ## Architecture — Hybrid: Pipeline Agent + Phase Skills
 
@@ -42,7 +43,8 @@ RE Pipeline Agent (orchestrator + traceability guardian)
 ├── /create-stories skill — decomposes Epics into User Stories
 ├── /create-srs skill     — compiles SRS from Stories + Epics
 ├── /create-tests skill   — derives Test Concept + Test Cases from SRS
-└── /trace skill          — generates traceability matrix, detects gaps
+├── /trace skill          — generates traceability matrix, detects gaps
+└── /create-tasks skill   — decomposes Accepted Stories into codebase-agnostic implementation Tasks (Dev-Team handoff)
 ```
 
 ## Traceability ID Chain
@@ -50,7 +52,7 @@ RE Pipeline Agent (orchestrator + traceability guardian)
 Every artifact element carries a unique ID linking forward through the pipeline:
 
 ```
-SH-001 → BUC-001 → FR-001 → EP-001 → US-001 → TC-001
+SH-001 → BUC-001 → FR-001 → EP-001 → US-001 → AC-FR-001-01 → TC-001 → TASK-001
 ```
 
 IDs are never reused, even after deletion or resolution.
@@ -113,10 +115,17 @@ ai-augmented-re/
 │   │   │   └── index.md         — Tests aggregator/index template
 │   │   └── evals/
 │   │       └── evals.json       — skill-creator iteration-1 test prompts
-│   └── trace/
-│       ├── skill.md             — /trace skill definition (pipeline auditor)
+│   ├── trace/
+│   │   ├── skill.md             — /trace skill definition (pipeline auditor)
+│   │   ├── templates/
+│   │   │   └── traceability-matrix.md  — Traceability Matrix template
+│   │   └── evals/
+│   │       └── evals.json       — skill-creator iteration-1 test prompts
+│   └── create-tasks/
+│       ├── skill.md             — /create-tasks skill definition (Phase 7 — Dev-Team handoff)
 │       ├── templates/
-│       │   └── traceability-matrix.md  — Traceability Matrix template
+│       │   ├── task.md          — per-Task file template
+│       │   └── index.md         — Tasks aggregator/index template
 │       └── evals/
 │           └── evals.json       — skill-creator iteration-1 test prompts
 ├── examples/
@@ -136,8 +145,11 @@ ai-augmented-re/
 │   │   ├── test-concept.md
 │   │   ├── test-case-001..014.md
 │   │   └── index.md             — benchmark Test Concept + 14 Test Cases derived from the SRS
-│   └── 06-traceability/
-│       └── traceability-matrix.md  — benchmark traceability matrix produced by /trace
+│   ├── 06-traceability/
+│   │   └── traceability-matrix.md  — benchmark traceability matrix produced by /trace
+│   └── 07-implementation-tasks/
+│       ├── index.md
+│       └── task-001..NNN.md     — benchmark Task set derived from the PocketPing chain
 ├── docs/                        — framework documentation and specifications
 ├── inputs/                      — drop raw documents here
 │   └── README.md
@@ -147,5 +159,6 @@ ai-augmented-re/
     ├── 03-user-stories/
     ├── 04-srs/
     ├── 05-test-concept/
-    └── 06-traceability/
+    ├── 06-traceability/
+    └── 07-implementation-tasks/
 ```

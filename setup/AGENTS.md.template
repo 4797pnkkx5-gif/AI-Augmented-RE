@@ -44,6 +44,7 @@ Current skill: —
 | 4 | `/create-srs` | Software Requirements Specification | Pending |
 | 5 | `/create-tests` | Test Concept + Test Cases | Pending |
 | 6 | `/trace` | Traceability Matrix | Pending |
+| 7 | `/create-tasks` | Implementation Tasks (Dev-Team handoff) | Pending |
 
 ## Key Paths
 

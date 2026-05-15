@@ -1,7 +1,7 @@
 # AI-Augmented RE — Governance Rules
 
-Version: 1.7.0
-Last updated: 2026-05-08
+Version: 1.8.0
+Last updated: 2026-05-15
 
 This file is the **canonical source** for governance rules. It lives in `skills/` and is synced to every project by `sync-framework.sh`. When this file and `AGENTS.md` diverge, this file takes precedence.
 
@@ -298,8 +298,76 @@ APPROVED at the Test phase is invalid if any of the following is true:
 
 ## Trace-Phase (read-only auditor — no governance gate)
 
-`/trace` (Phase 6 of the pipeline) is **diagnostic, not generative**. It walks every artefact and produces `artifacts/06-traceability/traceability-matrix.md` reporting orphans, coverage stats, cross-artefact drift, and impact analysis. Because the skill mints no IDs, never modifies upstream artefacts, and produces a snapshot rather than a settled artefact, it has no governance gate and no acceptance lifecycle of its own.
+`/trace` (Phase 6 of the pipeline) is **diagnostic, not generative**. It walks every artefact and produces `artifacts/06-traceability/traceability-matrix.md` reporting orphans, coverage stats, cross-artefact drift, and impact analysis. Because the skill mints no IDs, never modifies upstream artefacts, and produces a snapshot rather than a settled artefact, it has no governance gate and no acceptance lifecycle of its own. The matrix now extends through the TASK column added in Phase 7; orphan rules for Tasks are enforced by `/create-tasks`, not `/trace`.
 
 The matrix's Section 5 (Orphan Reports), Section 6 (Drift Detection), and Section 7 (Impact Analysis) are governance-adjacent — the human reviewer reads them to find structural defects elsewhere in the pipeline. The findings are **reported in the matrix itself**, not raised as new OQ-### entries — the OQ namespace is reserved for skills that generate content. `/trace` lists existing OQs from upstream artefacts but adds no new ones.
 
 The trace artefact does not have an `Accepted` status. Re-runs always overwrite from current upstream state. Manual edits to `artifacts/06-traceability/traceability-matrix.md` are not preserved across runs.
+
+---
+
+## Implementation-Tasks-Phase Governance Rules
+
+These rules govern `/create-tasks` (Phase 7 of the pipeline). They apply when the skill produces or updates files under `artifacts/07-implementation-tasks/`. The skill produces a **handoff artefact** — codebase-agnostic implementation tasks the Dev-Team's AI coding agent consumes. All rules below are enforced by the skill itself; this section is the canonical statement so projects, reviewers, and downstream consumers can rely on the same contract.
+
+### Upstream gate (SRS strict + Story incremental)
+
+`/create-tasks` SHALL refuse to run unless **both** of the following are true:
+
+- `artifacts/04-srs/srs.md` has frontmatter `status: Accepted`, AND
+- At least one `artifacts/03-user-stories/story-*.md` has `status: Accepted` whose `parent-epic` references an Accepted Epic.
+
+The skill SHALL also defensively re-check that the upstream Elicitation Document still has `status: Approved`. The SRS gate is strict because Tasks bind to NFR / CON / component context that must be stable; the Story gate is incremental so large projects can deliver handoff artefacts for completed Stories without serialising on the full Story set.
+
+### Story-to-Task mapping rule
+
+Every Accepted Story under an Accepted Epic SHALL produce at least one Task. Multiple Tasks per Story are allowed and expected when ACs decompose naturally; the deterministic decomposition heuristic in `skills/create-tasks/skill.md` §Step 3 produces one base Task per (Story, AC) pair plus NFR-threshold / scaffolding / cross-cutting Tasks as triggered. Two non-cross-cutting Tasks sharing the same `(parent-story, parent-acs)` is a structural defect → `OQ Severity=Medium` ("Story may be over-decomposed; consider merging tasks").
+
+### AC contribution rule
+
+Every AC of every Accepted Story SHALL be referenced by at least one Task's `parent-acs` list. AC orphan (Story Accepted, AC has no contributing Task) → `OQ Severity=High`.
+
+### TC linkage rule
+
+Every Pending Task's `parent-tcs` list SHALL be non-empty and every TC-### in the list SHALL correspond to an existing file in `artifacts/05-test-concept/`. Dangling TC reference → `OQ Severity=High`. Rationale: Tasks describe intent + contract; the contract is verified by Test Cases. A Task without TC linkage cannot be Accepted because its Definition of Done is not falsifiable.
+
+### Definition of Done rule
+
+Every Pending Task's Section 6 SHALL include one `[ ] AC-### verified by TC-### (TC result: pass)` line per parent AC. Missing → `OQ Severity=High`. The team MAY add task-specific DoD items below the `<!-- TEAM-ADDITIONS-BELOW -->` delimiter comment; the skill seeds only the AC/TC items and the standard regression / NFR-threshold lines. The skill SHALL NOT touch the region below the delimiter on re-run.
+
+### Codebase-agnosticism rule (boundary enforcement)
+
+Tasks SHALL NOT reference Dev-Team source-code file paths, class names, function names, framework names not present in the SRS Constraints section, or library versions. The skill validates this in Step 6 (Boundary Audit) by scanning task content against a published denylist and raises `OQ Severity=High` per violation. The skill SHALL NOT auto-rewrite the violation; the human reviewer either edits the Task to remove the leak or accepts the OQ with a justification recorded in the Task's Section 11.
+
+Rationale: the framework has no access to the Dev-Team's repository; the Task is an intent + contract handoff, not an implementation prescription. The Dev-Team's coding agent owns the mapping from intent to codebase. The moment Tasks contain codebase specifics, the framework crosses from RE into development tooling — a boundary the framework's identity rests on.
+
+Suppression rules: matches inside lifted regions (Section 2 Parent Traceability table, Given/When/Then text quoted from upstream ACs, SRS Constraint quotations) are not violations. The denylist applies to **content the skill authored** in Sections 1, 3, 4, 5, 6, 7, 9.
+
+### Cross-cutting Task rule
+
+A Task whose `cross-cutting` frontmatter is `Yes` SHALL list ≥2 parent Stories in Section 2 (one as Parent Story, the rest as Additional Stories). The origin NFR (whose `Business Use Case` field is multi-BUC or `General` / blank per the cross-cutting NFR rule from the Epic phase) MUST appear in every linked Story's parent Epic's `Cross-cutting NFRs` table. Cross-cutting Tasks are minted once and reused across every Story they serve. Violation → `OQ Severity=High`.
+
+### Effort provisional rule
+
+The `effort` field on every Pending Task carries a T-shirt size (S / M / L) derived from a heuristic over AC count, NFR exposure, and cross-cutting scope. The estimate is **AI-provisional** and MUST carry the note `**AI estimate — confirm with team.**` A Story producing ≥7 Tasks triggers `OQ Severity=High` asking the human to consider re-running `/create-stories` after splitting the Story along observable outcomes.
+
+### Re-run immutability rule
+
+Accepted and Rejected Tasks are immutable. On re-run, the skill MUST NOT modify any field of a Task with `Status = Accepted` or `Status = Rejected`. New information that could affect the Task appears as a review note appended to Section 13 (Revision History): `Note [YYYY-MM-DD]: re-run on /create-stories or /create-tests update — human review of this Task recommended.` The same rule applies to Tasks whose parent Story has been Rejected upstream — the skill never silently destabilises Accepted Task content; it raises an OQ instead.
+
+### OQ namespace continuity rule
+
+The `OQ-###` namespace is shared across the Elicitation Document, every Epic file, every Story file, the SRS, every Test Case file, and every Task file. New OQs created by `/create-tasks` continue numbering from the highest existing OQ-### across all six namespaces. OQ IDs are never reused, even after resolution or deletion. The `index.md` aggregator in `artifacts/07-implementation-tasks/` carries every Open OQ from every Task file, sorted by Severity (Critical → High → Medium → Low).
+
+### Implementation-Tasks-phase APPROVED integrity
+
+APPROVED at the Implementation-Tasks phase is invalid if any of the following is true:
+
+- Any Open Question with Severity = Critical raised by `/create-tasks` is Open.
+- Any Pending Task has no Owner.
+- Any Pending Task has an empty `parent-tcs` list.
+- Any Pending Task is missing the `[ ] AC-### verified by TC-### (TC result: pass)` line in Section 6 for any of its parent ACs.
+- Any Accepted Story under an Accepted Epic has no Task.
+- Any Boundary Audit OQ (Step 6 hit) is Open.
+
+The skill SHALL state every blocker explicitly in the review gate before presenting the APPROVED prompt. The Implementation-Tasks phase is the final RE handoff artefact — APPROVED here signals that the Dev-Team's coding agent may consume `artifacts/07-implementation-tasks/` as its specification.

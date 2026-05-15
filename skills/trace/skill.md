@@ -1,6 +1,6 @@
 # Skill: trace
 
-**Purpose:** Walk every artefact in the RE pipeline and produce a single traceability matrix at `artifacts/06-traceability/traceability-matrix.md`. The matrix links Stakeholders → BUCs → Functional / Non-Functional Requirements → Epics → User Stories → Acceptance Criteria → Test Cases. The skill detects orphans at every level, computes coverage statistics, finds cross-artefact drift (e.g. an AC text that differs between elicit doc, SRS, and Story), and produces an impact-analysis report showing which downstream elements depend on every Pending or Rejected upstream element. This is the framework's auditor — it runs anytime against whatever pipeline state exists, never modifies upstream artefacts, and never invents content.
+**Purpose:** Walk every artefact in the RE pipeline and produce a single traceability matrix at `artifacts/06-traceability/traceability-matrix.md`. The matrix links Stakeholders → BUCs → Functional / Non-Functional Requirements → Epics → User Stories → Acceptance Criteria → Test Cases → Implementation Tasks. The skill detects orphans at every level, computes coverage statistics, finds cross-artefact drift (e.g. an AC text that differs between elicit doc, SRS, and Story), and produces an impact-analysis report showing which downstream elements depend on every Pending or Rejected upstream element. This is the framework's auditor — it runs anytime against whatever pipeline state exists, never modifies upstream artefacts, and never invents content.
 
 **Invocation:**
 - Claude Code: `/trace`
@@ -12,6 +12,7 @@
 - `artifacts/03-user-stories/story-*.md` and `index.md`
 - `artifacts/04-srs/srs.md`
 - `artifacts/05-test-concept/test-concept.md`, `test-case-*.md`, and `index.md`
+- `artifacts/07-implementation-tasks/task-*.md` and `index.md`
 
 **Output:**
 - `artifacts/06-traceability/traceability-matrix.md` — single self-contained matrix file (rebuilt every run)
@@ -31,6 +32,7 @@ Detect which pipeline phases have artefacts:
 | 3 — Stories | `artifacts/03-user-stories/` contains at least one `story-*.md` | Note "Stories not yet generated"; matrix rows show `—` for the Story column |
 | 4 — SRS | `artifacts/04-srs/srs.md` exists | Note "SRS not yet compiled"; matrix shows `—` for Section-8 / SRS-AC columns |
 | 5 — Tests | `artifacts/05-test-concept/` contains at least one `test-case-*.md` | Note "Test Cases not yet generated"; matrix shows `—` for the TC column |
+| 7 — Tasks | `artifacts/07-implementation-tasks/` contains at least one `task-*.md` | Note "Implementation Tasks not yet generated"; matrix shows `—` for the TASK column |
 
 The elicitation document is the only mandatory input — without it, there is nothing to trace.
 
@@ -47,6 +49,7 @@ Extract elements from each phase that exists. The skill never modifies any upstr
 | Story files | US-### (Parent FR, Parent Epic, Owner, Story Points, Status, Acceptance Criteria references) |
 | SRS | Section 4 FRs, Section 5 NFRs (with cross-cutting flag), Section 6 CONs, Section 8 ACs, Section 9 SRS-internal traceability matrix; SRS frontmatter `status` and `version` |
 | Test Concept + Test Case files | TC-### (parent AC, parent FR/NFR, parent Epic, parent Story, Owner, Type, Level, Status) |
+| Task files | TASK-### (parent-story, parent-acs, parent-tcs, parent-epic, cross-cutting flag, Owner, Effort, Status); Section 2 Additional Stories for cross-cutting linkage |
 | inputs/manifest.md | input-document filenames (informational; used for the Project Overview section) |
 
 The skill uses the IDs and structural fields, not the full prose content. Cross-artefact drift detection in Step 6 reads the AC text and FR title prose to compare across artefacts.
@@ -55,7 +58,7 @@ The skill uses the IDs and structural fields, not the full prose content. Cross-
 
 ## Step 2 — Build the Forward Trace Matrix
 
-The forward chain is `SH → BUC → FR/NFR → EP → US → AC → TC`. One row per **leaf path** — every distinct combination from a Stakeholder all the way down to a Test Case (or to the deepest reachable element if the chain breaks earlier).
+The forward chain is `SH → BUC → FR/NFR → EP → US → AC → TC → TASK`. One row per **leaf path** — every distinct combination from a Stakeholder all the way down to a Task (or to the deepest reachable element if the chain breaks earlier).
 
 Walk the chain top-down, joining on the explicit links each artefact records:
 
@@ -65,16 +68,17 @@ Walk the chain top-down, joining on the explicit links each artefact records:
 - FR generates Story via Story's `parent-fr` frontmatter field
 - AC ties to FR/NFR via the AC's ID prefix (`AC-FR-###-NN` → FR-###, `AC-NFR-###-NN` → NFR-###)
 - AC generates TC via TC's `parent-ac` frontmatter field
+- AC generates TASK via TASK's `parent-acs` frontmatter list; the same TASK may join multiple AC paths when its `parent-acs` is multi-valued, and a cross-cutting TASK joins paths through every Story listed in its Section 2
 
-Render as a Markdown table with columns: **SH | BUC | FR / NFR | EP | US | AC | TC**. Every cell that has no link in the current state shows `—`. Sort rows by SH, then BUC, then FR/NFR, then AC.
+Render as a Markdown table with columns: **SH | BUC | FR / NFR | EP | US | AC | TC | TASK**. Every cell that has no link in the current state shows `—`. Sort rows by SH, then BUC, then FR/NFR, then AC, then TASK.
 
-NFR rows often have `—` in the US column (NFRs frequently don't trace through Stories) — that is correct, not a defect.
+NFR rows often have `—` in the US column (NFRs frequently don't trace through Stories) — that is correct, not a defect. NFR-threshold TASKs trace through their parent AC and TC but show `—` in the US column when no Story owns that NFR's AC. Cross-cutting TASKs appear on multiple rows (once per linked Story).
 
 ---
 
 ## Step 3 — Build the Backward Trace Matrix
 
-Same matrix, sorted bottom-up: TC → AC → FR/NFR → EP → US (where applicable) → BUC → SH. Useful for impact analysis and for verifying that every Test Case earns its keep — every TC must trace back to at least one AC, an FR/NFR, a BUC, and a Stakeholder.
+Same matrix, sorted bottom-up: TASK → TC → AC → FR/NFR → EP → US (where applicable) → BUC → SH. Useful for impact analysis and for verifying that every Task earns its keep — every TASK must trace back to at least one AC, an FR/NFR, a BUC, and a Stakeholder, plus at least one TC via its `parent-tcs` list. Cross-cutting TASKs appear once per linked Story.
 
 Render as a separate table after the forward matrix.
 
@@ -93,8 +97,9 @@ Compute counts and percentages for each level of the chain.
 | CONs | total Accepted / referenced in at least one Epic |
 | Epics | total Accepted / having Stories / having Stories all Accepted |
 | Stories | total Accepted / having an AC / having a TC |
-| ACs | total / having a TC |
-| TCs | total / Pending / Accepted / Rejected |
+| ACs | total / having a TC / having a TASK |
+| TCs | total / Pending / Accepted / Rejected / linked into at least one TASK via `parent-tcs` |
+| TASKs | total / Pending / Accepted / Rejected; cross-cutting count separately |
 
 Render as a single table `Element | In Scope | Covered | Coverage %`.
 
@@ -114,6 +119,12 @@ Group orphans by element type. An "orphan" is an element that lacks the next for
 | Story whose parent FR is not Accepted | High |
 | AC with no Test Case (and Test phase has run) | High (Test phase coverage gap) |
 | Test Case whose parent AC is not in the SRS canonical list | Critical |
+| Accepted Story under an Accepted Epic with no TASK (Tasks phase has run) | High (handoff to dev missing) |
+| TASK whose parent Story is not Accepted | High |
+| TASK whose parent AC is not in the SRS canonical list | Critical |
+| Two non-cross-cutting TASKs sharing the same `parent-story` and `parent-acs` | Medium (suggests redundant decomposition) |
+| Cross-cutting TASK linked to a non-existent or non-Accepted Story | High |
+| TASK whose `parent-tcs` references a TC-### that does not exist | High |
 
 Each orphan listed with its ID and a one-line reason. Total count summarised at the end of the section.
 
@@ -133,6 +144,9 @@ Pairs to check:
 | AC text (Given/When/Then) in elicit doc Section 6 vs SRS Section 8 | exact string equality |
 | AC text in SRS Section 8 vs the same AC reproduced in `story-NNN.md` Section 4 | exact string equality |
 | AC text in SRS Section 8 vs the parent of `test-case-NNN.md` Section 6/8 | exact string equality |
+| AC ID list referenced in `task-NNN.md` frontmatter `parent-acs` vs the SRS canonical AC list (Section 8) | every TASK `parent-acs` ID must exist in the SRS list |
+| TC ID list referenced in `task-NNN.md` frontmatter `parent-tcs` vs existing `test-case-*.md` files | every TASK `parent-tcs` ID must correspond to an existing TC file |
+| Story owner in `story-NNN.md` frontmatter vs Owner in every TASK with `parent-story: US-###` | exact ID equality (TASK Owner is inherited and must match Story Owner unless the human overrode it manually) |
 
 Each drift listed as a row: `<element ID>` | `<artefact A> says: '<excerpt>'` | `<artefact B> says: '<excerpt>'`. Severity is `High`. The matrix does not invent a resolution — it reports the conflict so the human can reconcile upstream.
 
@@ -151,6 +165,7 @@ Group by upstream element ID, listing dependent IDs:
 > - US-005 (parent-fr: FR-005)
 > - AC-FR-005-01, AC-FR-005-02 (children of FR-005)
 > - TC-005, TC-006 (parent-ac references)
+> - TASK-009, TASK-010 (parent-acs include AC-FR-005-* children)
 
 If an upstream element is Pending or Rejected and has no dependants yet (e.g. a Pending FR not yet referenced by any Epic): write `(no downstream impact yet)`.
 
@@ -171,7 +186,7 @@ If every upstream element is Accepted and stable: write "No Pending or Rejected 
 Present to the user:
 
 > **Trace report — `<project name>`, run <YYYY-MM-DD>**
-> - **Pipeline state:** [list which phases are present: e.g., "Elicit ✓, Epics ✓, Stories ✓, SRS ✓ (Accepted), Tests ✓"]
+> - **Pipeline state:** [list which phases are present: e.g., "Elicit ✓, Epics ✓, Stories ✓, SRS ✓ (Accepted), Tests ✓, Tasks ✓"]
 > - **Total leaf paths in forward matrix:** N
 > - **Coverage** (one summary line per element type with `Covered / Total = %`)
 > - **Orphans** (one line per kind, e.g., "Critical: 0; High: 2; Medium: 1")
@@ -184,6 +199,7 @@ Then give your **Professional Assessment**:
 - Critical-severity orphans
 - Drift on Acceptance Criteria text (a downstream test case may verify the wrong behaviour)
 - Test Cases referencing ACs not in the SRS canonical list
+- Tasks referencing ACs not in the SRS canonical list (the Dev-Team handoff is bound to non-existent specification)
 
 **Advisory findings (worth addressing in the next iteration):**
 - High-severity orphans
@@ -214,3 +230,7 @@ If everything is clean: state `"No issues — pipeline traceability is intact an
 | An elicit-doc OQ remains Open | List in the Project Overview section as "Open Questions: N — see elicit doc Section 7". `/trace` does not block on this; it reports. |
 | `artifacts/06-traceability/` does not exist | Create the directory. Write the matrix. |
 | Existing `traceability-matrix.md` was edited manually | Overwrite. Note in the Revision History row: "Note YYYY-MM-DD: previous content overwritten on re-run; manual edits to this file are not preserved." `/trace` is read-only on upstream; on its own output it is fully regenerative. |
+| TASK references AC-### no longer in SRS canonical list | List as Critical orphan: "TASK-### references non-existent AC in SRS". |
+| TASK references TC-### that does not exist in `artifacts/05-test-concept/` | List as High orphan: "TASK-### references non-existent TC-### in `parent-tcs`". |
+| Two non-cross-cutting TASKs share `(parent-story, parent-acs)` | List as Medium orphan: "Story may be over-decomposed; consider merging TASKs". |
+| Cross-cutting TASK references a Story that does not exist or is not Accepted | List as High orphan: "Cross-cutting TASK-### links to invalid Story US-###". |

@@ -148,11 +148,11 @@ fi
 
 # ── Artifact folders ──────────────────────────────────────────────────────────
 info "Creating artifact folders ..."
-for folder in artifacts/01-elicitation artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept artifacts/06-traceability; do
+for folder in artifacts/01-elicitation artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept artifacts/06-traceability artifacts/07-implementation-tasks; do
   mkdir -p "$folder"
   touch "$folder/.gitkeep"
 done
-success "Artifact folders ready (01 through 06)"
+success "Artifact folders ready (01 through 07)"
 
 # ── Obsidian vault integration ────────────────────────────────────────────────
 echo
@@ -192,6 +192,7 @@ status: active
 | SRS | \`/create-srs\` | Pending |
 | Test Cases | \`/create-tests\` | Pending |
 | Traceability | \`/trace\` | Pending |
+| Implementation Tasks | \`/create-tasks\` | Pending |
 
 ## Open Tasks
 
@@ -301,10 +302,19 @@ echo "     Stories in artifacts/03-user-stories/ (one file per Story + index.md)
 echo "     The skill is incremental: it runs as soon as at least one Epic is"
 echo "     Accepted; deferred Stories show up in index.md Section 5."
 echo
+echo "  7. Continue with /create-srs → /create-tests → /trace, then run"
+echo "     /create-tasks — decomposes Accepted Stories into developer-sized,"
+echo "     codebase-agnostic implementation Tasks in artifacts/07-implementation-tasks/."
+echo "     This is the final RE handoff artefact for the Dev-Team's AI coding agent."
+echo
 echo -e "${BOLD}Calibration examples (benchmark artefacts to compare against):${RESET}"
 echo "  examples/01-elicitation/elicitation-document-example.md  — fully Accepted PocketPing"
 echo "  examples/02-epics/                                       — Pending Epics derived from it"
 echo "  examples/03-user-stories/                                — Pending Stories derived from those Epics"
+echo "  examples/04-srs/                                         — SRS compiled from elicit + epics + stories"
+echo "  examples/05-test-concept/                                — Test Concept + Test Cases derived from the SRS"
+echo "  examples/06-traceability/                                — Traceability Matrix produced by /trace"
+echo "  examples/07-implementation-tasks/                        — Implementation Tasks derived from Accepted Stories (Phase 7 handoff)"
 echo
 if [[ "$STANDALONE" == true ]]; then
   echo -e "${BOLD}Project location:${RESET} $TARGET_DIR"

@@ -1,0 +1,29 @@
+{
+  "skill_name": "create-tasks",
+  "evals": [
+    {
+      "id": 1,
+      "name": "happy-path-pocketping-stories-accepted",
+      "prompt": "All 8 PocketPing Stories are Accepted under Accepted Epics, the SRS is Accepted, and the Test Concept is Accepted. Run /create-tasks to decompose every Accepted Story into developer-sized implementation Tasks. Save outputs to outputs/.",
+      "expected_output": "One base task-NNN.md per (Story, AC) pair (PocketPing has 14 ACs across 8 Stories → 14 base Tasks). Plus NFR-threshold Tasks for each Performance/Security/Reliability NFR with a Measurable Target (typically 2–4 extras). Plus 1 cross-cutting Task if a cross-cutting NFR is referenced by ≥2 Stories (NFR-002 Session Authentication is the most likely candidate). Total Tasks ~16–19. index.md aggregates with Task Map (Stories → Tasks subgraphs + cross-cutting subgraph), Story Coverage Matrix (all 8 Stories Covered), AC Coverage Matrix (all 14 ACs Covered), Effort Distribution. No Task contains codebase-specific content; Section 11 of every Task reads 'No codebase-specific assumptions detected by /create-tasks Step 6 validation.' Boundary Audit Summary in index.md Section 9 reports 0 flags.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "gate-failure-srs-pending",
+      "prompt": "We need implementation tasks for PocketPing. Decompose the Accepted Stories now.",
+      "expected_output": "The skill detects that artifacts/04-srs/srs.md has status: Pending (not Accepted) and HALTS at Step 0 with a clear message naming the current status and instructing the user to have the SRS Accepted before running /create-tasks. No task-*.md files written. The skill does not regress to operating on stale upstream context.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "boundary-audit-flags-codebase-leak",
+      "prompt": "Run /create-tasks against the PocketPing Accepted Stories. Note: TASK-001 was previously authored by a human reviewer with the Intent paragraph 'Add a POST handler to src/api/auth.ts using the existing UserService class, wired into the Express router.' Re-run the skill.",
+      "expected_output": "Step 6 boundary audit flags TASK-001. Three patterns trip the denylist: the file path 'src/api/auth.ts', the framework name 'Express', and the class/handler noun pair 'POST handler' + 'UserService class'. The skill raises OQ Severity=High naming the offending excerpts and recording the OQ-### in TASK-001 Section 11 (Boundary Audit). The Task is NOT auto-rewritten — TASK-001 Section 1 remains as the human authored it, but the OQ flags it for reviewer action. The review-gate output lists TASK-001 under 'BOUNDARY FLAGS' and the Professional Assessment Blocking section names the OQ. Approval is invalid until the human edits TASK-001 or accepts the OQ with justification.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

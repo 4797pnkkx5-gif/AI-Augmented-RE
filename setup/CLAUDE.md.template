@@ -7,8 +7,8 @@ See `AGENTS.md` for active phase, pipeline status, and AI rules.
 ## RE Pipeline
 
 ```
-Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test Cases
-               ↑ review gate        ↑ gate   ↑ gate       ↑ gate   ↑ gate
+Raw Inputs → Elicitation → Epics → Stories → SRS → Tests → Traceability → Implementation Tasks
+               ↑ gate      ↑ gate  ↑ gate    ↑ gate ↑ gate   (audit)         ↑ gate
 ```
 
 | Phase | Skill | Artifact | Status |
@@ -19,6 +19,7 @@ Raw Inputs → Elicitation Document → Epics → User Stories → SRS → Test 
 | 4 | `/create-srs` | Software Requirements Specification | Pending |
 | 5 | `/create-tests` | Test Concept + Test Cases | Pending |
 | 6 | `/trace` | Traceability Matrix | Pending |
+| 7 | `/create-tasks` | Implementation Tasks (Dev-Team handoff) | Pending |
 
 ## How to Use
 

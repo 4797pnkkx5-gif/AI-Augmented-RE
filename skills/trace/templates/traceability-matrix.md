@@ -6,7 +6,7 @@ created: <!-- CREATION_DATE -->
 last-updated: <!-- LAST_UPDATED_DATE -->
 status: Auto-generated
 based-on:
-  pipeline-state: <!-- e.g., "Elicit ✓ (Approved 2026-04-15), Epics ✓ (3 Accepted), Stories ✓ (8 Accepted), SRS ✓ (Accepted 2026-05-08), Tests ✓ (14 Pending)" -->
+  pipeline-state: <!-- e.g., "Elicit ✓ (Approved 2026-04-15), Epics ✓ (3 Accepted), Stories ✓ (8 Accepted), SRS ✓ (Accepted 2026-05-08), Tests ✓ (14 Pending), Tasks ✓ (16 Pending, 1 cross-cutting)" -->
 ---
 
 # Traceability Matrix — <!-- PROJECT_NAME -->
@@ -26,6 +26,7 @@ based-on:
   - Phase 3 — User Stories: <!-- N Accepted, M Pending, K Rejected, or "absent" -->
   - Phase 4 — Software Requirements Specification: <!-- ✓ status / version / Approved date OR "absent" -->
   - Phase 5 — Test Concept + Test Cases: <!-- N Accepted TCs, M Pending, K Rejected, or "absent" -->
+  - Phase 7 — Implementation Tasks: <!-- N Accepted TASKs, M Pending, K Rejected, X cross-cutting, or "absent" -->
 - **Total leaf paths in forward matrix:** <!-- N -->
 - **Open Questions across all artefacts:** <!-- N (Critical / High / Medium / Low) — see each artefact's Open Questions section -->
 
@@ -33,22 +34,22 @@ based-on:
 
 ## 2. Forward Trace Matrix
 
-> One row per leaf path, sorted by Stakeholder, then BUC, then FR/NFR, then AC. Cells with no link in the current pipeline state show `—`. NFR rows often have `—` in the User Story column because NFRs typically don't trace through Stories — that is correct, not a defect.
+> One row per leaf path, sorted by Stakeholder, then BUC, then FR/NFR, then AC, then TASK. Cells with no link in the current pipeline state show `—`. NFR rows often have `—` in the User Story column because NFRs typically don't trace through Stories — that is correct, not a defect. Cross-cutting TASKs appear on multiple rows (once per linked Story).
 
-| Stakeholder | BUC | FR / NFR | Epic | User Story | Acceptance Criterion | Test Case |
-|-------------|-----|----------|------|-----------|----------------------|----------|
-| SH-001 | BUC-001 | FR-001 | EP-001 | US-001 | AC-FR-001-01 | TC-001 |
-| SH-001 | BUC-001 | NFR-001 | EP-001 | — | AC-NFR-001-01 | TC-011 |
+| Stakeholder | BUC | FR / NFR | Epic | User Story | Acceptance Criterion | Test Case | Task |
+|-------------|-----|----------|------|-----------|----------------------|----------|------|
+| SH-001 | BUC-001 | FR-001 | EP-001 | US-001 | AC-FR-001-01 | TC-001 | TASK-001 |
+| SH-001 | BUC-001 | NFR-001 | EP-001 | — | AC-NFR-001-01 | TC-011 | TASK-015 |
 
 ---
 
 ## 3. Backward Trace Matrix
 
-> Same data, sorted bottom-up — every Test Case must trace back through ACs, FRs/NFRs, BUCs, to Stakeholders. Useful for answering "why does this test exist?" and for impact analysis.
+> Same data, sorted bottom-up — every Task must trace back through TCs, ACs, FRs/NFRs, BUCs, to Stakeholders. Useful for answering "why does this Task exist?" and for impact analysis.
 
-| Test Case | Acceptance Criterion | FR / NFR | Epic | User Story | BUC | Stakeholder |
-|-----------|----------------------|----------|------|-----------|-----|-------------|
-| TC-001 | AC-FR-001-01 | FR-001 | EP-001 | US-001 | BUC-001 | SH-001 |
+| Task | Test Case | Acceptance Criterion | FR / NFR | Epic | User Story | BUC | Stakeholder |
+|------|-----------|----------------------|----------|------|-----------|-----|-------------|
+| TASK-001 | TC-001 | AC-FR-001-01 | FR-001 | EP-001 | US-001 | BUC-001 | SH-001 |
 
 ---
 
@@ -65,6 +66,7 @@ based-on:
 | Stories (Accepted) | <!-- N --> | <!-- M (with AC + TC) --> | <!-- % --> | |
 | Acceptance Criteria | <!-- N --> | <!-- M (with TC) --> | <!-- % --> | |
 | Test Cases | <!-- N --> | <!-- M (Pending + Accepted) --> | <!-- % --> | <!-- N Accepted, M Pending, K Rejected --> |
+| Implementation Tasks | <!-- N --> | <!-- M (Pending + Accepted) --> | <!-- % --> | <!-- N Accepted, M Pending, K Rejected; X cross-cutting --> |
 
 ---
 
@@ -81,6 +83,7 @@ based-on:
 | FR-### | Functional Requirement | Accepted FR not In-Scope of any Epic — Epic-phase governance violation |
 | NFR-### | Non-Functional Requirement | Accepted NFR not In-Scope of any Epic |
 | TC-### | Test Case | Parent AC not in the SRS canonical list (Section 8) — `/create-srs` lift may have been wrong |
+| TASK-### | Implementation Task | Parent AC not in the SRS canonical list — Dev-Team handoff bound to non-existent specification |
 
 ### 5.2 High-severity orphans
 
@@ -91,12 +94,17 @@ based-on:
 | BUC-### | Accepted Business Use Case | No Accepted FR or NFR — possible scope mismatch |
 | FR-### | Accepted FR | No Story yet — Story phase incomplete for this FR |
 | AC-### | Acceptance Criterion | No Test Case (Test phase has run but did not generate a TC for this AC) |
+| US-### | Accepted Story under Accepted Epic | No TASK (Tasks phase has run but did not decompose this Story) |
+| TASK-### | Implementation Task | Parent Story is not Accepted |
+| TASK-### | Cross-cutting Task | Linked to a non-existent or non-Accepted Story |
+| TASK-### | Implementation Task | `parent-tcs` references a TC-### that does not exist |
 
 ### 5.3 Medium-severity orphans
 
 | ID | Element | Issue |
 |----|---------|-------|
 | SH-### | Stakeholder | Owns no BUC |
+| TASK-### / TASK-### | Implementation Tasks | Two non-cross-cutting TASKs share `(parent-story, parent-acs)` — Story may be over-decomposed |
 
 ### 5.4 Summary
 
@@ -116,6 +124,9 @@ based-on:
 | AC-FR-###-NN | elicit Section 6 vs SRS Section 8 | <!-- excerpt --> | <!-- excerpt --> |
 | FR-### Title | elicit Section 5.1 vs SRS Section 4 | <!-- excerpt --> | <!-- excerpt --> |
 | NFR-### Measurable Target | elicit Section 5.2 vs SRS Section 5 | <!-- excerpt --> | <!-- excerpt --> |
+| TASK-### `parent-acs` | TASK frontmatter vs SRS Section 8 canonical AC list | <!-- TASK refers to AC-### not in SRS --> | <!-- AC-### not found --> |
+| TASK-### `parent-tcs` | TASK frontmatter vs existing `test-case-*.md` files | <!-- TASK refers to TC-### not found --> | <!-- TC-### not found --> |
+| TASK Owner | TASK frontmatter `owner` vs parent Story frontmatter `owner` | <!-- excerpt --> | <!-- excerpt --> |
 
 **If no drift detected:** "No cross-artefact drift detected. All upstream pairs agree on the lifted content."
 
@@ -132,6 +143,7 @@ Affects:
 - US-### (parent-fr: FR-###)
 - AC-FR-###-NN (children of FR-###)
 - TC-### (parent-ac references the children)
+- TASK-### (parent-acs include children of FR-###)
 
 ### EP-### (Pending in `epic-NNN.md`)
 
@@ -154,6 +166,7 @@ Affects:
 | OQ-### | epic-001.md Section 10 | High | <!-- question text --> | Open |
 | OQ-### | story-005.md Section 10 | Medium | <!-- question text --> | Open |
 | OQ-### | test-case-007.md Section 11 | High | <!-- question text --> | Open |
+| OQ-### | task-012.md Section 10 | High | <!-- question text — e.g., boundary-audit flag --> | Open |
 
 ---
 
