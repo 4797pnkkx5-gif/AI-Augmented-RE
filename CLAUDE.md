@@ -29,6 +29,7 @@ Each generative artifact requires explicit human approval before the next is gen
 | 5 | `/create-tests` | Test Concept + Test Cases |
 | 6 | `/trace` | Traceability Matrix |
 | 7 | `/create-tasks` | Implementation Tasks (Dev-Team handoff) |
+| 8 | `/update` | Update Report (cascade coordinator; diagnostic, no gate) |
 
 ## Architecture — Hybrid: Pipeline Agent + Phase Skills
 
@@ -44,7 +45,8 @@ RE Pipeline Agent (orchestrator + traceability guardian)
 ├── /create-srs skill     — compiles SRS from Stories + Epics
 ├── /create-tests skill   — derives Test Concept + Test Cases from SRS
 ├── /trace skill          — generates traceability matrix, detects gaps
-└── /create-tasks skill   — decomposes Accepted Stories into codebase-agnostic implementation Tasks (Dev-Team handoff)
+├── /create-tasks skill   — decomposes Accepted Stories into codebase-agnostic implementation Tasks (Dev-Team handoff)
+└── /update skill         — coordinates re-runs after new inputs land; produces a dated Update Report (no gate)
 ```
 
 ## Traceability ID Chain
@@ -121,11 +123,17 @@ ai-augmented-re/
 │   │   │   └── traceability-matrix.md  — Traceability Matrix template
 │   │   └── evals/
 │   │       └── evals.json       — skill-creator iteration-1 test prompts
-│   └── create-tasks/
-│       ├── skill.md             — /create-tasks skill definition (Phase 7 — Dev-Team handoff)
+│   ├── create-tasks/
+│   │   ├── skill.md             — /create-tasks skill definition (Phase 7 — Dev-Team handoff)
+│   │   ├── templates/
+│   │   │   ├── task.md          — per-Task file template
+│   │   │   └── index.md         — Tasks aggregator/index template
+│   │   └── evals/
+│   │       └── evals.json       — skill-creator iteration-1 test prompts
+│   └── update/
+│       ├── skill.md             — /update skill definition (cascade coordinator; diagnostic, no gate)
 │       ├── templates/
-│       │   ├── task.md          — per-Task file template
-│       │   └── index.md         — Tasks aggregator/index template
+│       │   └── update-report.md — per-run Update Report template
 │       └── evals/
 │           └── evals.json       — skill-creator iteration-1 test prompts
 ├── examples/
@@ -154,6 +162,7 @@ ai-augmented-re/
 ├── inputs/                      — drop raw documents here
 │   └── README.md
 └── artifacts/                   — generated RE artifacts (version-controlled)
+    ├── 00-updates/
     ├── 01-elicitation/
     ├── 02-epics/
     ├── 03-user-stories/

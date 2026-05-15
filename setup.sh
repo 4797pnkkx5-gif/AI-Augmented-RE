@@ -148,11 +148,11 @@ fi
 
 # ── Artifact folders ──────────────────────────────────────────────────────────
 info "Creating artifact folders ..."
-for folder in artifacts/01-elicitation artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept artifacts/06-traceability artifacts/07-implementation-tasks; do
+for folder in artifacts/00-updates artifacts/01-elicitation artifacts/02-epics artifacts/03-user-stories artifacts/04-srs artifacts/05-test-concept artifacts/06-traceability artifacts/07-implementation-tasks; do
   mkdir -p "$folder"
   touch "$folder/.gitkeep"
 done
-success "Artifact folders ready (01 through 07)"
+success "Artifact folders ready (00 through 07)"
 
 # ── Obsidian vault integration ────────────────────────────────────────────────
 echo
@@ -306,6 +306,13 @@ echo "  7. Continue with /create-srs → /create-tests → /trace, then run"
 echo "     /create-tasks — decomposes Accepted Stories into developer-sized,"
 echo "     codebase-agnostic implementation Tasks in artifacts/07-implementation-tasks/."
 echo "     This is the final RE handoff artefact for the Dev-Team's AI coding agent."
+echo
+echo "  8. When new inputs land in inputs/ AFTER any phase is Approved:"
+echo "     a. Re-run /elicit (full-synthesis on all inputs)"
+echo "     b. Type APPROVED on the elicit review gate"
+echo "     c. Run /update to get the cascade roadmap — an Update Report at"
+echo "        artifacts/00-updates/ lists what changed and which downstream"
+echo "        skills to re-run. /update is diagnostic; no APPROVED prompt."
 echo
 echo -e "${BOLD}Calibration examples (benchmark artefacts to compare against):${RESET}"
 echo "  examples/01-elicitation/elicitation-document-example.md  — fully Accepted PocketPing"

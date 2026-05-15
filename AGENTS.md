@@ -50,6 +50,7 @@ Raw Inputs → Elicitation → Epics → Stories → SRS → Tests → Traceabil
 | 5 | `/create-tests` | Test Concept + Test Cases |
 | 6 | `/trace` | Traceability Matrix |
 | 7 | `/create-tasks` | Implementation Tasks (Dev-Team handoff) |
+| 8 | `/update` | Update Report (cascade coordinator; diagnostic, no gate) |
 
 ## Key Paths
 
@@ -62,3 +63,4 @@ Raw Inputs → Elicitation → Epics → Stories → SRS → Tests → Traceabil
 - Sync script: `sync-framework.sh` — push framework updates to existing projects; detects governance drift
 - Test project: `~/projects/linked-locket/` — evaluation target
 - Phase 7 (`/create-tasks`) consumes the Accepted Story set + Accepted SRS and produces codebase-agnostic implementation Tasks at `artifacts/07-implementation-tasks/` — the final RE handoff artefact for the Dev-Team's AI coding agent
+- `/update` (cascade coordinator) runs after `/elicit` is re-run with new inputs and Approved; produces `artifacts/00-updates/update-YYYY-MM-DD-NN.md` summarising what changed and which downstream skills to re-run. Diagnostic; no APPROVED gate; mints no IDs; never invokes other skills

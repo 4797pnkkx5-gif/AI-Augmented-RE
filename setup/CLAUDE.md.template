@@ -20,6 +20,7 @@ Raw Inputs → Elicitation → Epics → Stories → SRS → Tests → Traceabil
 | 5 | `/create-tests` | Test Concept + Test Cases | Pending |
 | 6 | `/trace` | Traceability Matrix | Pending |
 | 7 | `/create-tasks` | Implementation Tasks (Dev-Team handoff) | Pending |
+| 8 | `/update` | Update Report (cascade coordinator; diagnostic, no gate) | — |
 
 ## How to Use
 

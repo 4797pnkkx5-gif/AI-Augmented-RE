@@ -1,0 +1,29 @@
+{
+  "skill_name": "update",
+  "evals": [
+    {
+      "id": 1,
+      "name": "first-run-with-pocketping-baseline",
+      "prompt": "PocketPing is at full pipeline state: elicit Approved (v1.3), 3 Epics Accepted, 8 Stories Accepted, SRS Accepted v1.0, 14 TCs Pending, 14 Tasks Pending. No prior Update Report exists. Run /update.",
+      "expected_output": "First Update Report written to artifacts/00-updates/update-YYYY-MM-DD-01.md. Frontmatter shows previous-report: 'none (first run)'. Section 1 narrates this as the baseline run. Sections 3.1 through 3.4 show '(none — first run)'. Section 3.5 shows the Component-3 placeholder text. Section 4 recommends only /trace ('No upstream changes recommend a downstream re-run'). Section 5 Mermaid diagram is the minimal elicit --> trace pair. Section 6 lists current Pipeline State exactly matching the PocketPing baseline. Appendix A enumerates every SH/BUC/FR/NFR/CON/AC/ASMP/RSK/OQ/EP/US/SRS/TC/TASK with current status and content-hash. No element-level IDs minted; no skills invoked.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "steady-state-delta-after-meeting-minutes",
+      "prompt": "PocketPing at full pipeline state with the prior baseline Update Report at update-2026-05-19-01.md. A meeting-minutes input meeting-minutes-2026-05-20.md has been processed by /elicit and APPROVED. The new input: added a new stakeholder SH-005 (Data Protection Officer), added a new NFR-005 (encryption-at-rest), and resolved OQ-005 (the EP-001 merge question). Run /update.",
+      "expected_output": "New Update Report at update-2026-05-20-01.md (incremented date relative to prior). Frontmatter shows previous-report: 'update-2026-05-19-01.md'. Section 1 reports counters: 1 input processed, 2 new elements (SH-005, NFR-005), 0 Pending refined, 1 OQ resolved, 0 Anomalous. Section 2 lists meeting-minutes-2026-05-20.md with OQ-005 in 'OQs Resolved' and SH-005, NFR-005 in 'Elements Affected'. Section 3.1 lists SH-005 and NFR-005. Section 3.3 lists OQ-005 resolution. Section 4 recommends in order: /create-epics (because NFR-005 needs Epic allocation — rationale names NFR-005) → /create-srs (NEEDED with the Component-1 manual-workaround caveat — Reject the Accepted SRS, then re-run /create-srs) → /create-tests (NEEDED because SRS canonical AC list will grow) → /create-tasks (NEEDED because new TC needs a TASK) → /trace (always). Section 5 Mermaid diagram shows the full cascade. Appendix A snapshot extended with SH-005 and NFR-005 entries.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "no-changes-since-last-update",
+      "prompt": "Prior Update Report exists at update-2026-05-20-01.md. No new inputs added since that report; /elicit was not re-run. The pipeline state is identical to the prior snapshot. Run /update.",
+      "expected_output": "New Update Report at update-2026-05-20-02.md (same date as previous, NN incremented from 01 to 02). Frontmatter previous-report: 'update-2026-05-20-01.md'. Section 1 Run Summary explicitly narrates: 'No changes detected since the previous Update Report.' All counters in Section 1 are 0. Sections 3.1–3.4 all read '(no changes in this category)' or are empty. Section 4 recommends ONLY /trace with the note 'No upstream changes recommend a downstream re-run; /trace is recommended only to confirm chain integrity.' Section 5 Mermaid shows the minimal elicit --> trace pair. Section 6 reproduces the prior Pipeline State unchanged. Appendix A snapshot is byte-identical to the previous run's Appendix A (because no elements changed). Section 8 Revision History records this no-op run.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

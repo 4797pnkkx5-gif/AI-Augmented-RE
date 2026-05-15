@@ -1,6 +1,6 @@
 # AI-Augmented RE — Governance Rules
 
-Version: 1.8.0
+Version: 1.9.0
 Last updated: 2026-05-15
 
 This file is the **canonical source** for governance rules. It lives in `skills/` and is synced to every project by `sync-framework.sh`. When this file and `AGENTS.md` diverge, this file takes precedence.
@@ -303,6 +303,50 @@ APPROVED at the Test phase is invalid if any of the following is true:
 The matrix's Section 5 (Orphan Reports), Section 6 (Drift Detection), and Section 7 (Impact Analysis) are governance-adjacent — the human reviewer reads them to find structural defects elsewhere in the pipeline. The findings are **reported in the matrix itself**, not raised as new OQ-### entries — the OQ namespace is reserved for skills that generate content. `/trace` lists existing OQs from upstream artefacts but adds no new ones.
 
 The trace artefact does not have an `Accepted` status. Re-runs always overwrite from current upstream state. Manual edits to `artifacts/06-traceability/traceability-matrix.md` are not preserved across runs.
+
+`/trace` and `/update` are sibling diagnostic skills. `/trace` audits cross-pipeline consistency at any point in time and overwrites a single canonical matrix; `/update` coordinates the re-run cascade after new inputs land and produces a new dated Update Report per run. Neither has a governance gate; `/trace`'s output is a single overwritable artefact while `/update`'s reports accumulate as an immutable audit trail.
+
+---
+
+## Update-Phase Governance Rules
+
+These rules govern `/update` (the framework's update coordinator). The skill produces `artifacts/00-updates/update-YYYY-MM-DD-NN.md` — one Update Report per run — summarising what changed in the elicit doc and downstream artefacts since the previous Update Report and recommending which downstream skills to re-run.
+
+### Diagnostic, not generative
+
+`/update` is **diagnostic, not generative**. Like `/trace`, it has no governance gate and no acceptance lifecycle of its own. The skill mints no element-level IDs, modifies no upstream artefact, and never invokes another skill. Re-runs always produce a NEW dated file (never overwrite a prior report) so the Update Report history is an immutable audit trail. This is a deliberate contrast with `/trace`, whose output is a single overwritable canonical matrix — for an update coordinator, history is the value; for an auditor, the latest snapshot is the value.
+
+### Read-only on upstream and on prior reports
+
+The skill SHALL NOT modify the elicit doc, any downstream artefact, the manifest, or any previous Update Report. It produces exactly one output (a new Update Report). Manual edits to prior Update Reports are not preserved across re-runs of any skill (they should not be edited; they are immutable audit records).
+
+### Snapshot-based delta computation
+
+The skill SHALL compute deltas by comparing the current pipeline state against the snapshot embedded in Appendix A of the most recent previous Update Report. The snapshot format is YAML, one entry per first-class element, capturing `id`, `type`, `status`, `content-hash` (sha256 of normalised body content), `last-modified-by` (input filename or `"skill-generated"`). The snapshot is the canonical inter-run state record — git history is not consulted (the skill remains portable to projects that may not be under git, or projects with non-linear git history).
+
+### Recommendation heuristics are published
+
+`/update` Step 4 (downstream-rerun recommendation) uses a published heuristic table — every rule that triggers a "rerun X" recommendation is enumerated in `skills/update/skill.md` Step 4. No hidden logic. The team can verify *what* will be recommended before relying on the skill.
+
+### No new OQs minted
+
+The skill SHALL NOT add to the OQ-### namespace. Findings (anomalous content changes, manual-edit suspicions) are reported inline in the Update Report's Section 3.5 as Notes. The OQ namespace is reserved for skills that generate content; `/update` is informational.
+
+### No bypassing of downstream review gates
+
+The skill SHALL NOT invoke any downstream skill automatically. Recommendations are presented in the Update Report's Section 4 with ordered rationale; the human invokes each downstream skill manually. This rule preserves the framework's "step-by-step with review gates" identity at the meta-orchestration layer. The temptation to build a one-command cascade is explicitly rejected — every phase has its own peer-collaboration review gate and the framework's discipline depends on that gate being honoured at each phase.
+
+### Forward compatibility with Amendments (Component 3)
+
+The Update Report template includes Section 3.5 (Amendment Proposals) as a placeholder. Until Component 3 (the Amendment Protocol) ships, this section reads `"(none — amendment protocol not yet shipped)"` and anomalous content changes on Accepted elements are recorded as inline Notes flagging that manual reconciliation is required. When Component 3 lands, `/elicit` will raise `AM-###` proposals on detected upstream conflicts and `/update` Step 3 will surface them in Section 3.5 as a populated table — no change to the Update Report template structure is required.
+
+### First-run handling
+
+For the very first `/update` run on a project (no prior Update Report exists), the skill captures the current pipeline state as the baseline snapshot in Appendix A. Sections 3.1 through 3.4 report `"(none — first run)"`. Section 4 recommends only `/trace`. The report's frontmatter records `previous-report: "none (first run)"`. This baseline is the diff target for the next run.
+
+### Update-Phase APPROVED integrity
+
+There is no APPROVED at the Update phase. The skill mints a report and stops. If the human disagrees with a recommendation in Section 4, the resolution is to ignore the recommendation; the report is informational only. The human's authority over phase-level Acceptance is exercised at each downstream skill's own review gate, not at `/update`'s output.
 
 ---
 
